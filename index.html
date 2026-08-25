@@ -2123,65 +2123,43 @@ function renderHorasExtrasTable(key){
 }
 
 async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
-  const url = SYNC_CONFIG.url;
-  const key = SYNC_CONFIG.key;
-  if(!url) return;
-
-  let dataFormatada = dataDia;
-  if(dataDia && dataDia.includes('-')) {
-    const p = dataDia.split('-');
-    if(p.length === 3) dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
-  }
-
-  const payload = {
-    key: key,
-    acao: "salvarHoraExtra",
-    nome: nome,
-    dataDia: dataFormatada,
-    totalHoras: dataObj.total,
-    h50: dataObj.h50,
-    h100: dataObj.h100,
-    n50: dataObj.n50,
-    n100: dataObj.n100,
-    custo: custoCalc
-  };
+  if (typeof _supabase === 'undefined') return;
 
   const btn = document.getElementById('heSaveDayBtn');
   if(btn) { btn.textContent = "Salvando..."; btn.disabled = true; }
 
   try {
-    let iframe = document.getElementById('hidden_iframe');
-    if(!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'hidden_iframe';
-      iframe.name = 'hidden_iframe';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    // 1. Grava diretamente na tabela horas_extras do Supabase
+    const { error } = await _supabase.from('horas_extras').insert([
+      {
+        nome_gcm: nome,
+        data_dia: dataDia, // Formato AAAA-MM-DD
+        total_horas: dataObj.total,
+        h_50: dataObj.h50,
+        h_100: dataObj.h100,
+        n_50: dataObj.n50,
+        n_100: dataObj.n100,
+        custo: custoCalc
+      }
+    ]);
+
+    if (error) throw error;
+
+    // 2. Registra o rastro na Auditoria (quem fez e quando)
+    if (typeof registrarRastroAuditoria === 'function') {
+      await registrarRastroAuditoria(
+        "Lançamento de Horas Extras", 
+        `Servidor: ${nome} | Dia: ${dataDia} | Total: ${dataObj.total}h | Custo: R$ ${custoCalc.toFixed(2)}`
+      );
     }
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.target = 'hidden_iframe';
-
-    for (const [k, v] of Object.entries(payload)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = k;
-      input.value = v;
-      form.appendChild(input);
-    }
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
 
     if(btn) { 
-      btn.textContent = "✓ Salvo!"; 
+      btn.textContent = "✓ Salvo no Supabase!"; 
       setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
     }
   } catch(err){
-    console.error("Erro ao sincronizar hora extra online:", err);
+    console.error("Erro ao salvar hora extra no Supabase:", err);
+    alert("Erro ao salvar no banco de dados: " + err.message);
     if(btn) { 
       btn.textContent = "Erro ao salvar"; 
       setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
