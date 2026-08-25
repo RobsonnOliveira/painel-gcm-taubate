@@ -472,7 +472,8 @@
       </div>
     </div>
 
-    <div id="ctrlGcmInfo" class="metric-note" style="margin:-3px 0 8px;"></div><div id="cloudSyncStatus" class="metric-note" style="margin:0 0 14px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--ink2);">☁️ Verificando sincronização...</div>
+    <div id="ctrlGcmInfo" class="metric-note" style="margin:-3px 0 8px;"></div>
+    <div id="cloudSyncStatus" class="metric-note" style="margin:0 0 14px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--ink2);">☁️ Verificando sincronização...</div>
 
     <div id="ctrlLimitAlert" style="display:none; margin:12px 0; padding:14px 18px; border-radius:12px; border:2px solid #E05C5C; background:rgba(224,92,92,0.15); color:#FF8080; font-size:15px; font-weight:700; text-align:center; box-shadow:0 4px 15px rgba(224,92,92,0.3);">
       ⚠️ ATENÇÃO: O limite máximo de 6 Faltas Abonadas anuais foi atingido. Não é permitido registrar outra abonada neste ano.
@@ -481,16 +482,24 @@
     <div id="ctrlResumoCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 18px;"></div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      <!-- FALTA ABONADA -->
       <div class="he-card" style="background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:16px;">
         <h3 style="color:var(--gold);margin-top:0;">Falta Abonada</h3>
-        <div class="metric-note" style="margin-bottom:12px;">São permitidas até <b>06 Faltas Abonadas por ano</b>. Escolha o dia e o mês do lançamento.</div>
+        <div class="metric-note" style="margin-bottom:12px;">São permitidas até <b>06 Faltas Abonadas por ano</b>. Escolha o dia e opcionalmente uma observação.</div>
         <div class="he-field" style="margin-bottom:12px;">
           <label>Dia da Falta Abonada</label>
           <input type="date" id="ctrlAbonadaDate" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
         </div>
-        <button id="ctrlClearAbonadaBtn" class="sans" style="width:100%;margin-top:7px;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Limpar registros de Faltas Abonadas</button><button id="ctrlSaveAbonadaBtn" class="primary sans" style="width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">Registrar Falta Abonada</button>
+        <div class="he-field" style="margin-bottom:12px;">
+          <label>Observação (opcional)</label>
+          <input type="text" id="ctrlAbonadaObs" maxlength="200" placeholder="Ex.: Motivo particular" style="width:100%;box-sizing:border-box;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
+        </div>
+        <button id="ctrlSaveAbonadaBtn" class="primary sans" style="width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;">Registrar Falta Abonada</button>
+        <button type="button" onclick="ctrlLimparAbonadaDiaSelecionado()" class="sans" style="width:100%;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:8px;font-size:11.5px;font-weight:700;cursor:pointer;margin-bottom:4px;">🗑️ Excluir Abonada do Dia Selecionado</button>
+        <button type="button" onclick="ctrlLimparAbonadas()" class="sans" style="width:100%;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:8px;font-size:11.5px;font-weight:700;cursor:pointer;">⚠️ Limpar TODAS as Abonadas do Ano</button>
       </div>
 
+      <!-- ATESTADO -->
       <div class="he-card" style="background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:16px;">
         <h3 style="color:var(--gold);margin-top:0;">Atestado</h3>
         <div class="metric-note" style="margin-bottom:12px;">Informe a data inicial e a quantidade de dias. O sistema registrará <b>cada dia individualmente</b>.</div>
@@ -506,7 +515,9 @@
           <label>Observação (opcional)</label>
           <input type="text" id="ctrlAtestadoObs" maxlength="200" placeholder="Ex.: Atestado apresentado" style="width:100%;box-sizing:border-box;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
         </div>
-        <button id="ctrlClearAtestadoBtn" class="sans" style="width:100%;margin-top:7px;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Limpar registros de Atestados</button><button id="ctrlSaveAtestadoBtn" class="sans" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">Registrar Atestado</button>
+        <button id="ctrlSaveAtestadoBtn" class="sans" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;">Registrar Atestado</button>
+        <button type="button" onclick="ctrlLimparAtestadoDiaSelecionado()" class="sans" style="width:100%;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:8px;font-size:11.5px;font-weight:700;cursor:pointer;margin-bottom:4px;">🗑️ Excluir Atestado do Dia Selecionado</button>
+        <button type="button" onclick="ctrlLimparAtestados()" class="sans" style="width:100%;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:8px;font-size:11.5px;font-weight:700;cursor:pointer;">⚠️ Limpar TODOS os Atestados do Ano</button>
       </div>
     </div>
 
@@ -1592,8 +1603,8 @@ function renderLegend(){
     </div>
   `;
 }
-const SUPABASE_URL = 'https://equpcuinumkloguwypmt.supabase.co/rest/v1/'; // Cole sua URL aqui
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxdXBjdWludW1rbG9ndXd5cG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzI4MDgsImV4cCI6MjEwMzI0ODgwOH0.0-Fe9r0dn-SMUUHxjg9ytRXFSp_-Oxw4yc9PtwJ4tko'; // Cole sua chave aqui
+const SUPABASE_URL = 'https://equpcuinumkloguwypmt.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxdXBjdWludW1rbG9ndXd5cG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzI4MDgsImV4cCI6MjEwMzI0ODgwOH0.0-Fe9r0dn-SMUUHxjg9ytRXFSp_-Oxw4yc9PtwJ4tko'; 
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const SYNC_CONFIG = {
     url: "https://script.google.com/macros/s/AKfycbzFTHb9_sSXxgWQai3L8yq4i7qaqHp8cWyF1rvVAtAIwBV3UDmQxFn2IFW9ZQkYp09Qnw/exec",
@@ -2123,14 +2134,17 @@ function renderHorasExtrasTable(key){
 }
 
 async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
-  if (typeof _supabase === 'undefined') return;
+  if (typeof _supabase === 'undefined') {
+    alert("Erro: Supabase não está carregado!");
+    return;
+  }
 
   const btn = document.getElementById('heSaveDayBtn');
-  if(btn) { btn.textContent = "Salvando..."; btn.disabled = true; }
+  if(btn) { btn.textContent = "Salvando no Supabase..."; btn.disabled = true; }
 
   try {
-    // 1. Grava diretamente na tabela horas_extras do Supabase
-    const { error } = await _supabase.from('horas_extras').insert([
+    // 1. Tenta inserir na tabela e força o retorno do erro se houver
+    const { data, error } = await _supabase.from('horas_extras').insert([
       {
         nome_gcm: nome,
         data_dia: dataDia, // Formato AAAA-MM-DD
@@ -2141,11 +2155,13 @@ async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
         n_100: dataObj.n100,
         custo: custoCalc
       }
-    ]);
+    ]).select();
 
-    if (error) throw error;
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    // 2. Registra o rastro na Auditoria (quem fez e quando)
+    // 2. Registra o rastro na Auditoria
     if (typeof registrarRastroAuditoria === 'function') {
       await registrarRastroAuditoria(
         "Lançamento de Horas Extras", 
@@ -2158,8 +2174,8 @@ async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
       setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
     }
   } catch(err){
-    console.error("Erro ao salvar hora extra no Supabase:", err);
-    alert("Erro ao salvar no banco de dados: " + err.message);
+    console.error("Erro detalhado ao salvar no Supabase:", err);
+    alert("FALHA AO SALVAR NO SUPABASE: " + err.message);
     if(btn) { 
       btn.textContent = "Erro ao salvar"; 
       setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
@@ -2167,7 +2183,7 @@ async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
   }
 }
 
-// --- BIND DE HORAS EXTRAS E BOTÃO DE E-MAIL ---
+// --- BIND DE HORAS EXTRAS E BOTÕES ---
 function bindHorasExtras(){
   const sel=document.getElementById('heGcmSelect'); if(!sel || sel.dataset.bound) return; sel.dataset.bound='1';
   
@@ -2199,73 +2215,47 @@ function bindHorasExtras(){
     const btn = document.getElementById('enviarEmailBtn');
     if(!btn) return;
     
-    btn.textContent = "Salvando relatório na nuvem...";
+    btn.textContent = "Salvando fechamento na nuvem...";
     btn.disabled = true;
 
     try {
-      let listaRegistros = [];
-      let custoGeralMes = 0;
       let totalHorasMes = 0;
+      let custoGeralMes = 0;
 
-      // Varre apenas os servidores que possuem lançamentos de hora extra no mês selecionado
       ROSTER.forEach(rec => {
-        let tH=0, t50=0, t100=0, tNot=0, tCusto=0;
+        let tH = 0, tCusto = 0;
         const monthsData = state.horasExtras[rec.nome] || {};
-        
         Object.entries(monthsData).forEach(([dIso, val]) => {
           if(dIso.slice(0,7) === mesAno){
             const dc = heCalc(rec, normalizeHERecord(val), new Date(dIso+"T00:00:00"));
             tH += dc.totalHoras; 
-            t50 += dc.h50; 
-            t100 += dc.h100; 
-            tNot += dc.totalNoturnas; 
             tCusto += dc.total;
           }
         });
-
-        // Se o GCM fez horas extras, adiciona ao relatório com o seu respectivo plantão
         if(tH > 0){
           totalHorasMes += tH;
           custoGeralMes += tCusto;
-          
-          const plantaoDoGcm = PLANTAO_MAP[rec.nome] || "Não definido";
-
-          listaRegistros.push({
-            nome: rec.nome,
-            matricula: rec.mat || "—",
-            plantao: plantaoDoGcm,
-            totalHoras: tH,
-            horas50: t50,
-            horas100: t100,
-            noturnas: tNot,
-            custoTotal: tCusto
-          });
         }
       });
 
-      // Cria a estrutura organizada na nuvem
-      if (!state.relatoriosMensais) state.relatoriosMensais = {};
-      state.relatoriosMensais[mesAno] = {
-        periodo: monthLabel(mesAno + "-01"),
-        totalServidoresComHE: listaRegistros.length,
-        totalGeralHoras: totalHorasMes,
-        custoTotalFolhaExtra: custoGeralMes,
-        geradoEm: new Date().toLocaleString("pt-BR"),
-        servidores: listaRegistros
-      };
+      // Registra a consolidação do mês na tabela de auditoria do Supabase
+      if (typeof registrarRastroAuditoria === 'function') {
+        await registrarRastroAuditoria(
+          "Fechamento Mensal de Horas Extras",
+          `Mês/Ano: ${mesAno} | Total de Horas: ${totalHorasMes}h | Custo Total: R$ ${custoGeralMes.toFixed(2)}`
+        );
+      }
 
-      await salvarDadosNaNuvem(); // Grava limpo e estruturado no JSONBin
-
-      btn.textContent = "✓ Relatório otimizado salvo na nuvem!";
+      btn.textContent = "✓ Fechamento salvo no Supabase!";
       setTimeout(() => { 
-        btn.textContent = "📧 Enviar Relatório do Mês por E-mail"; 
+        btn.textContent = "📧 Salvar Fechamento do Mês na Nuvem"; 
         btn.disabled = false; 
       }, 4000);
 
     } catch(err) {
-      console.error("Erro ao salvar relatório:", err);
+      console.error("Erro ao salvar fechamento:", err);
       alert("Erro ao salvar: " + err.message);
-      btn.textContent = "📧 Enviar Relatório do Mês por E-mail";
+      btn.textContent = "📧 Salvar Fechamento do Mês na Nuvem";
       btn.disabled = false;
     }
   });
@@ -2280,7 +2270,8 @@ function bindHorasExtras(){
     });}
   });
 
-  document.getElementById('heSaveDayBtn')?.addEventListener('click',async()=>{
+  // Botão Registrar Este Dia
+  document.getElementById('heSaveDayBtn')?.addEventListener('click', async () => {
     const nome = sel.value;
     if(nome === 'SESOP') return;
     if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nSalvar o lançamento de Horas Extras do dia ${document.getElementById('heDayDate').value} para ${nome}?`)) return;
@@ -2296,34 +2287,140 @@ function bindHorasExtras(){
     if(errEl) errEl.style.display = 'none';
     
     salvarHorasExtras(); 
-    salvarDadosNaNuvem(); 
 
     const rec = ROSTER.find(r => r.nome === nome);
     if(rec){
       const calc = heCalc(rec, data, new Date(diaIso+"T00:00:00"));
-      salvarHoraExtraOnline(nome, diaIso, data, calc.total);
+      await salvarHoraExtraOnline(nome, diaIso, data, calc.total);
     }
 
     renderHorasExtras();
   });
 
-  document.getElementById('heClearDayBtn')?.addEventListener('click',async()=>{
-    const nome=sel.value; if(nome==='SESOP') return;
-    const dayISO=document.getElementById('heDayDate').value;
-    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nLimpar o registro de Horas Extras do dia ${dayISO} para ${nome}?`)) return;
+  // Botão Limpar Dia Selecionado (Com exclusão real no Supabase)
+  document.getElementById('heClearDayBtn')?.addEventListener('click', async () => {
+    const nome = sel.value; 
+    if(nome === 'SESOP') return;
+    
+    const dayISO = document.getElementById('heDayDate').value;
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nDeseja excluir o registro de Horas Extras do dia ${dayISO} para ${nome} do Supabase?`)) return;
+
     if(state.horasExtras[nome]) {
       delete state.horasExtras[nome][dayISO];
-      // Se não sobrou nenhum dia com hora extra para este GCM, remove o objeto dele por completo
       if(Object.keys(state.horasExtras[nome]).length === 0) {
         delete state.horasExtras[nome];
       }
     }
-    
     salvarHorasExtras();
-    salvarDadosNaNuvem(); // Envia para a nuvem limpando o registro
+
+    if (typeof _supabase !== 'undefined') {
+      try {
+        const { error } = await _supabase
+          .from('horas_extras')
+          .delete()
+          .eq('nome_gcm', nome)
+          .eq('data_dia', dayISO);
+
+        if (error) throw error;
+
+        if (typeof registrarRastroAuditoria === 'function') {
+          await registrarRastroAuditoria(
+            "Exclusão de Horas Extras", 
+            `Servidor: ${nome} | Dia excluído: ${dayISO}`
+          );
+        }
+
+        alert("Registro apagado do Supabase com sucesso!");
+      } catch (err) {
+        console.error("Erro ao excluir do Supabase:", err);
+        alert("Erro ao excluir do banco de dados: " + err.message);
+      }
+    }
+
     renderHorasExtras();
   });
 }
+
+  const map={heTotalHours:'total',he50Hours:'h50',he100Hours:'h100',heNight50Hours:'n50',heNight100Hours:'n100'};
+  Object.entries(map).forEach(([id,key])=>{
+    const e=document.getElementById(id);
+    if(e && !e.dataset.bound){ e.dataset.bound='1'; e.addEventListener('change',()=>{ 
+      const d=heData(sel.value, document.getElementById('heDayDate').value, true); 
+      const old=d[key]||0, novo=+e.value||0;
+      confirmarAlteracao(`Alterar ${id} do dia ${document.getElementById('heDayDate').value} para ${novo}?`,()=>{ d[key]=novo; renderHorasExtras(); },()=>{ e.value=old; });
+    });}
+  });
+
+  document.getElementById('heSaveDayBtn')?.addEventListener('click', async () => {
+    const nome = sel.value;
+    if(nome === 'SESOP') return;
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nSalvar o lançamento de Horas Extras do dia ${document.getElementById('heDayDate').value} para ${nome}?`)) return;
+    const diaIso = document.getElementById('heDayDate').value;
+    const data = heData(nome, diaIso, true); 
+    const err = heValidate(data);
+    const errEl = document.getElementById('heError');
+    
+    if(err){ 
+      if(errEl){ errEl.textContent = err; errEl.style.display = 'block'; } 
+      return; 
+    }
+    if(errEl) errEl.style.display = 'none';
+    
+    salvarHorasExtras(); 
+
+    const rec = ROSTER.find(r => r.nome === nome);
+    if(rec){
+      const calc = heCalc(rec, data, new Date(diaIso+"T00:00:00"));
+      await salvarHoraExtraOnline(nome, diaIso, data, calc.total);
+    }
+
+    renderHorasExtras();
+  });
+
+  document.getElementById('heClearDayBtn')?.addEventListener('click', async () => {
+    const nome = sel.value; 
+    if(nome === 'SESOP') return;
+    
+    const dayISO = document.getElementById('heDayDate').value;
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nDeseja excluir o registro de Horas Extras do dia ${dayISO} para ${nome} do Supabase?`)) return;
+
+    // 1. Remove do armazenamento local
+    if(state.horasExtras[nome]) {
+      delete state.horasExtras[nome][dayISO];
+      if(Object.keys(state.horasExtras[nome]).length === 0) {
+        delete state.horasExtras[nome];
+      }
+    }
+    salvarHorasExtras();
+
+    // 2. Remove diretamente da tabela horas_extras no Supabase
+    if (typeof _supabase !== 'undefined') {
+      try {
+        const { error } = await _supabase
+          .from('horas_extras')
+          .delete()
+          .eq('nome_gcm', nome)
+          .eq('data_dia', dayISO);
+
+        if (error) throw error;
+
+        // 3. Registra a exclusão no rastro de Auditoria
+        if (typeof registrarRastroAuditoria === 'function') {
+          await registrarRastroAuditoria(
+            "Exclusão de Horas Extras", 
+            `Servidor: ${nome} | Dia excluído: ${dayISO}`
+          );
+        }
+
+        alert("Registro apagado do Supabase com sucesso!");
+      } catch (err) {
+        console.error("Erro ao excluir do Supabase:", err);
+        alert("Erro ao excluir do banco de dados: " + err.message);
+      }
+    }
+
+    renderHorasExtras();
+  });
 
 
 // ---------------------------------------------------------------------------
@@ -2405,78 +2502,219 @@ function renderControleGcm(){
   bindControleGcm();
 }
 function renderControleGcmView(){
-  const {nome,ano,data}=ctrlCurrent();
-  if(!nome || !data) return;
-  const rec=ROSTER.find(r=>r.nome===nome);
-  const abonadas=data.abonadas;
-  const atestados=data.atestados;
-  const utilizadas=abonadas.length;
-  const saldo=Math.max(0,CTRL_ABONADAS_LIMITE-utilizadas);
-  const diasAtestado=atestados.length;
-  const mes=document.getElementById('ctrlFilterMonth')?.value || 'all';
-  const filtradosAb=mes==='all'?abonadas:abonadas.filter(x=>x.data.slice(5,7)===mes);
-  const filtradosAt=mes==='all'?atestados:atestados.filter(x=>x.data.slice(5,7)===mes);
-  const info=document.getElementById('ctrlGcmInfo');
-  if(info) info.innerHTML=`<b>${ctrlEscape(nome)}</b> · Matrícula ${ctrlEscape(rec?.mat||'—')} · Ano ${ano}`;
-  const cards=document.getElementById('ctrlResumoCards');
-  if(cards) cards.innerHTML=`
+  const {nome, ano, data} = ctrlCurrent();
+  if(!data) return;
+  const rec = ROSTER.find(r => r.nome === nome);
+  const abonadas = data.abonadas;
+  const atestados = data.atestados;
+  const utilizadas = abonadas.length;
+  const saldo = Math.max(0, CTRL_ABONADAS_LIMITE - utilizadas);
+  const diasAtestado = atestados.length;
+  
+  const mes = document.getElementById('ctrlFilterMonth')?.value || 'all';
+  
+  // Normaliza para garantir leitura segura se houver dados em formatos mistos
+  const normAb = abonadas.map(x => typeof x === 'object' && x !== null ? x : { data: x, obs: '—' });
+  const normAt = atestados.map(x => typeof x === 'object' && x !== null ? x : { data: x, obs: x.obs || '—', dias: x.dias || 1 });
+
+  const filtradosAb = mes === 'all' ? normAb : normAb.filter(x => x.data && x.data.slice(5,7) === mes);
+  const filtradosAt = mes === 'all' ? normAt : normAt.filter(x => x.data && x.data.slice(5,7) === mes);
+  
+  const info = document.getElementById('ctrlGcmInfo');
+  if(info) info.innerHTML = `<b>${ctrlEscape(nome)}</b> · Matrícula ${ctrlEscape(rec?.mat||'—')} · Ano ${ano}`;
+  
+  const cards = document.getElementById('ctrlResumoCards');
+  if(cards) cards.innerHTML = `
     <div class="he-card"><div class="metric-note">Abonadas utilizadas</div><div style="font-size:24px;font-weight:800;color:var(--gold)">${utilizadas}/6</div></div>
     <div class="he-card"><div class="metric-note">Abonadas disponíveis</div><div style="font-size:24px;font-weight:800;color:${saldo?'var(--good)':'#FF8080'}">${saldo}</div></div>
     <div class="he-card"><div class="metric-note">Dias de atestado</div><div style="font-size:24px;font-weight:800;color:var(--txt)">${diasAtestado}</div></div>
-    <div class="he-card"><div class="metric-note">Lançamentos no filtro</div><div style="font-size:24px;font-weight:800;color:var(--txt)">${filtradosAb.length+filtradosAt.length}</div></div>`;
-  const alert=document.getElementById('ctrlLimitAlert');
-  const btn=document.getElementById('ctrlSaveAbonadaBtn');
-  if(alert){ alert.style.display=utilizadas>=CTRL_ABONADAS_LIMITE?'block':'none'; }
-  if(btn){ btn.disabled=utilizadas>=CTRL_ABONADAS_LIMITE; btn.style.opacity=btn.disabled?.55:1; btn.style.cursor=btn.disabled?'not-allowed':'pointer'; }
-  const table=document.getElementById('ctrlHistoricoTable');
+    <div class="he-card"><div class="metric-note">Lançamentos no filtro</div><div style="font-size:24px;font-weight:800;color:var(--txt)">${filtradosAb.length + filtradosAt.length}</div></div>`;
+  
+  const alert = document.getElementById('ctrlLimitAlert');
+  const btnAb = document.getElementById('ctrlSaveAbonadaBtn');
+  if(alert) alert.style.display = utilizadas >= CTRL_ABONADAS_LIMITE ? 'block' : 'none';
+  if(btnAb){ 
+    btnAb.disabled = utilizadas >= CTRL_ABONADAS_LIMITE; 
+    btnAb.style.opacity = btnAb.disabled ? .55 : 1; 
+    btnAb.style.cursor = btnAb.disabled ? 'not-allowed' : 'pointer'; 
+  }
+  
+  const table = document.getElementById('ctrlHistoricoTable');
   if(!table) return;
-  const rows=[];
-  filtradosAb.forEach((x,i)=>rows.push({data:x.data,tipo:'Falta Abonada',dias:1,obs:'—',kind:'ab',idx:abonadas.indexOf(x)}));
-  filtradosAt.forEach(x=>rows.push({data:x.data,tipo:'Atestado',dias:1,obs:x.obs||'—',kind:'at',idx:atestados.indexOf(x)}));
-  rows.sort((a,b)=>a.data.localeCompare(b.data));
-  if(!rows.length){ table.innerHTML='<div class="metric-note" style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px;">Nenhum lançamento encontrado para este GCM no período selecionado.</div>'; return; }
-  table.innerHTML=`<table class="breakdown-table" style="width:100%;"><thead><tr><th>Data</th><th>Tipo</th><th>Dias</th><th>Observação</th><th>Ação</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${ctrlDateBR(r.data)}</td><td>${r.tipo}</td><td>${r.dias}</td><td>${ctrlEscape(r.obs)}</td><td><button type="button" class="ctrlDeleteBtn" data-kind="${r.kind}" data-idx="${r.idx}" style="background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:6px;padding:5px 8px;cursor:pointer;">Excluir</button></td></tr>`).join('')}</tbody></table>`;
-  table.querySelectorAll('.ctrlDeleteBtn').forEach(b=>b.addEventListener('click',()=>ctrlDelete(b.dataset.kind,+b.dataset.idx)));
+  
+  const rows = [];
+  filtradosAb.forEach((x) => rows.push({ data: x.data, tipo: 'Falta Abonada', dias: 1, obs: x.obs || '—', kind: 'ab', idx: normAb.indexOf(x) }));
+  filtradosAt.forEach((x) => rows.push({ data: x.data, tipo: 'Atestado', dias: x.dias || 1, obs: x.obs || '—', kind: 'at', idx: normAt.indexOf(x) }));
+  rows.sort((a,b) => (a.data || '').localeCompare(b.data || ''));
+  
+  if(!rows.length){ 
+    table.innerHTML = '<div class="metric-note" style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px;">Nenhum lançamento encontrado para este GCM no período selecionado.</div>'; 
+    return; 
+  }
+  
+  table.innerHTML = `<table class="breakdown-table" style="width:100%;"><thead><tr><th>Data</th><th>Tipo</th><th>Dias</th><th>Observação</th><th>Ação</th></tr></thead><tbody>${rows.map(r => `<tr><td>${ctrlDateBR(r.data)}</td><td>${r.tipo}</td><td>${r.dias}</td><td>${ctrlEscape(r.obs)}</td><td><button type="button" class="ctrlDeleteBtn" data-kind="${r.kind}" data-idx="${r.idx}" style="background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:6px;padding:5px 8px;cursor:pointer;">Excluir</button></td></tr>`).join('')}</tbody></table>`;
+  table.querySelectorAll('.ctrlDeleteBtn').forEach(b => b.addEventListener('click', () => ctrlDelete(b.dataset.kind, +b.dataset.idx)));
 }
 function bindControleGcm(){
-  const ids=['ctrlGcmSelect','ctrlFilterYear','ctrlFilterMonth'];
-  ids.forEach(id=>{ const el=document.getElementById(id); if(el && !el.dataset.bound){ el.dataset.bound='1'; el.addEventListener('change',()=>{ renderControleGcmView(); }); }});
-  const ab=document.getElementById('ctrlSaveAbonadaBtn');
-  if(ab && !ab.dataset.bound){ ab.dataset.bound='1'; ab.addEventListener('click',ctrlRegistrarAbonada); }
-  const at=document.getElementById('ctrlSaveAtestadoBtn');
-  if(at && !at.dataset.bound){ at.dataset.bound='1'; at.addEventListener('click',ctrlRegistrarAtestado); }
-  const cab=document.getElementById('ctrlClearAbonadaBtn');
-  if(cab && !cab.dataset.bound){ cab.dataset.bound='1'; cab.addEventListener('click',ctrlLimparAbonadas); }
-  const cat=document.getElementById('ctrlClearAtestadoBtn');
-  if(cat && !cat.dataset.bound){ cat.dataset.bound='1'; cat.addEventListener('click',ctrlLimparAtestados); }
+  const ids = ['ctrlGcmSelect','ctrlFilterYear','ctrlFilterMonth'];
+  ids.forEach(id => { const el = document.getElementById(id); if(el && !el.dataset.bound){ el.dataset.bound='1'; el.addEventListener('change', () => renderControleGcmView()); }});
+  
+  const ab = document.getElementById('ctrlSaveAbonadaBtn');
+  if(ab && !ab.dataset.bound){ ab.dataset.bound='1'; ab.addEventListener('click', ctrlRegistrarAbonada); }
+  
+  const at = document.getElementById('ctrlSaveAtestadoBtn');
+  if(at && !at.dataset.bound){ at.dataset.bound='1'; at.addEventListener('click', ctrlRegistrarAtestado); }
+  
+  // Vínculo dos botões de exclusão do dia selecionado
+  const cabDay = document.getElementById('ctrlClearAbonadaDayBtn');
+  if(cabDay && !cabDay.dataset.bound){ 
+    cabDay.dataset.bound='1'; 
+    cabDay.addEventListener('click', (e) => { e.preventDefault(); ctrlLimparAbonadaDiaSelecionado(); }); 
+  }
+  
+  const catDay = document.getElementById('ctrlClearAtestadoDayBtn');
+  if(catDay && !catDay.dataset.bound){ 
+    catDay.dataset.bound='1'; 
+    catDay.addEventListener('click', (e) => { e.preventDefault(); ctrlLimparAtestadoDiaSelecionado(); }); 
+  }
+
+  // Vínculo dos botões de limpeza anual completa
+  const cabYear = document.getElementById('ctrlClearAbonadaYearBtn');
+  if(cabYear && !cabYear.dataset.bound){ 
+    cabYear.dataset.bound='1'; 
+    cabYear.addEventListener('click', (e) => { e.preventDefault(); ctrlLimparAbonadas(); }); 
+  }
+  
+  const catYear = document.getElementById('ctrlClearAtestadoYearBtn');
+  if(catYear && !catYear.dataset.bound){ 
+    catYear.dataset.bound='1'; 
+    catYear.addEventListener('click', (e) => { e.preventDefault(); ctrlLimparAtestados(); }); 
+  }
 }
 async function ctrlRegistrarAbonada(){
-  const {nome,ano,data}=ctrlCurrent();
-  if(!nome || !data){ ctrlToast('Selecione um GCM antes de registrar.',false); return; }
-  const input=document.getElementById('ctrlAbonadaDate');
-  const iso=input?.value;
-  if(!iso){ ctrlToast('Informe o dia da Falta Abonada.',false); return; }
-  if(+iso.slice(0,4)!==ano){ ctrlToast(`A data deve pertencer ao ano de referência ${ano}.`,false); return; }
-  if(data.abonadas.length>=CTRL_ABONADAS_LIMITE){ renderControleGcmView(); ctrlToast('Lançamento bloqueado: o GCM já possui 6 Faltas Abonadas neste ano.',false); return; }
-  if(data.abonadas.some(x=>x===iso)){ ctrlToast('Já existe Falta Abonada registrada para esta data.',false); return; }
+  const {nome, ano, data} = ctrlCurrent();
+  if(!nome || !data){ ctrlToast('Selecione um GCM antes de registrar.', false); return; }
+  const input = document.getElementById('ctrlAbonadaDate');
+  const obsInput = document.getElementById('ctrlAbonadaObs');
+  const iso = input?.value;
+  const obs = (obsInput?.value || '').trim();
+  
+  if(!iso){ ctrlToast('Informe o dia da Falta Abonada.', false); return; }
+  if(+iso.slice(0,4) !== ano){ ctrlToast(`A data deve pertencer ao ano de referência ${ano}.`, false); return; }
+  if(data.abonadas.length >= CTRL_ABONADAS_LIMITE){ renderControleGcmView(); ctrlToast('Lançamento bloqueado: o GCM já possui 6 Faltas Abonadas neste ano.', false); return; }
+  
+  const jaExiste = data.abonadas.some(x => (x.data || x) === iso);
+  if(jaExiste){ ctrlToast('Já existe Falta Abonada registrada para esta data.', false); return; }
 
-  // 1. Salva localmente
-  data.abonadas.push(iso);
-  data.abonadas.sort();
+  // 1. Salva localmente como objeto estruturado
+  data.abonadas.push({ data: iso, obs: obs || '—' });
+  data.abonadas.sort((a,b) => (a.data || a).localeCompare(b.data || b));
   salvarControleGcmLocal();
 
-  // 2. Salva no Supabase (Banco de Dados PostgreSQL)
+  // 2. Salva no Supabase
   if (typeof _supabase !== 'undefined') {
-    await _supabase.from('controle_gcm').insert([
-      { nome_gcm: nome, ano: ano, tipo: 'abonada', data_registro: iso, dias: 1 }
-    ]);
+    try {
+      const { error } = await _supabase.from('controle_gcm').insert([
+        { nome_gcm: nome, ano: ano, tipo: 'abonada', data_registro: iso, dias: 1, observacao: obs || null }
+      ]);
+      if (error) throw error;
+      await registrarRastroAuditoria("Lançamento de Falta Abonada", `Servidor: ${nome} | Data: ${iso} | Obs: ${obs}`);
+    } catch(err) {
+      console.error("Erro ao salvar abonada no Supabase:", err);
+    }
+  }
 
-    // 3. Registra quem fez a alteração na Auditoria
-    await registrarRastroAuditoria("Lançamento de Falta Abonada", `Servidor: ${nome} | Data: ${iso} | Ano: ${ano}`);
+  if(obsInput) obsInput.value = ''; // Limpa o campo de observação após salvar
+  renderControleGcmView();
+  ctrlToast(`Falta Abonada de ${ctrlDateBR(iso)} registrada com sucesso!`, true);
+}
+
+// Limpar Abonada referente SOMENTE ao dia selecionado no input de data
+async function ctrlLimparAbonadaDiaSelecionado(){
+  const {nome, ano, data} = ctrlCurrent();
+  if(!data) return;
+  const iso = document.getElementById('ctrlAbonadaDate')?.value;
+  if(!iso){ ctrlToast('Selecione a data no campo de Falta Abonada para limpar.', false); return; }
+
+  const index = data.abonadas.findIndex(x => (x.data || x) === iso);
+  if(index === -1){ ctrlToast(`Não há falta abonada registrada no dia ${ctrlDateBR(iso)}.`, false); return; }
+
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nDeseja excluir a Falta Abonada do dia ${ctrlDateBR(iso)} para ${nome}?`)) return;
+
+  data.abonadas.splice(index, 1);
+  salvarControleGcmLocal();
+
+  if (typeof _supabase !== 'undefined') {
+    try {
+      const { error } = await _supabase
+        .from('controle_gcm')
+        .delete()
+        .eq('nome_gcm', nome)
+        .eq('ano', ano)
+        .eq('tipo', 'abonada')
+        .eq('data_registro', iso);
+
+      if (error) throw error;
+
+      if (typeof registrarRastroAuditoria === 'function') {
+        await registrarRastroAuditoria(
+          "Exclusão de Falta Abonada (Dia)", 
+          `Servidor: ${nome} | Ano: ${ano} | Data: ${iso}`
+        );
+      }
+
+      ctrlToast("Falta abonada do dia excluída com sucesso!", true);
+    } catch(err) {
+      console.error("Erro ao excluir do Supabase:", err);
+      ctrlToast("Erro ao excluir no banco: " + err.message, false);
+    }
   }
 
   renderControleGcmView();
-  ctrlToast(`Falta Abonada de ${ctrlDateBR(iso)} registrada com sucesso!`, true);
+}
+
+// Limpar Atestado referente SOMENTE ao dia selecionado no input de atestado
+async function ctrlLimparAtestadoDiaSelecionado(){
+  const {nome, ano, data} = ctrlCurrent();
+  if(!data) return;
+  const iso = document.getElementById('ctrlAtestadoDate')?.value;
+  if(!iso){ ctrlToast('Selecione a data no campo de Atestado para limpar.', false); return; }
+
+  const index = data.atestados.findIndex(x => (x.data || x) === iso);
+  if(index === -1){ ctrlToast(`Não há atestado registrado no dia ${ctrlDateBR(iso)}.`, false); return; }
+
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nDeseja excluir o atestado do dia ${ctrlDateBR(iso)} para ${nome}?`)) return;
+
+  data.atestados.splice(index, 1);
+  salvarControleGcmLocal();
+
+  if (typeof _supabase !== 'undefined') {
+    try {
+      const { error } = await _supabase
+        .from('controle_gcm')
+        .delete()
+        .eq('nome_gcm', nome)
+        .eq('ano', ano)
+        .eq('tipo', 'atestado')
+        .eq('data_registro', iso);
+
+      if (error) throw error;
+
+      if (typeof registrarRastroAuditoria === 'function') {
+        await registrarRastroAuditoria(
+          "Exclusão de Atestado (Dia)", 
+          `Servidor: ${nome} | Ano: ${ano} | Data: ${iso}`
+        );
+      }
+
+      ctrlToast("Atestado do dia excluído com sucesso!", true);
+    } catch(err) {
+      console.error("Erro ao excluir do Supabase:", err);
+      ctrlToast("Erro ao excluir no banco: " + err.message, false);
+    }
+  }
+
+  renderControleGcmView();
 }
 
 async function ctrlRegistrarAtestado(){
@@ -2491,50 +2729,115 @@ async function ctrlRegistrarAtestado(){
   
   for(let i=0;i<dias;i++){
     const iso=ctrlAddDays(inicio,i);
-    if(data.atestados.some(x=>x.data===iso)){ ctrlToast(`O dia ${ctrlDateBR(iso)} já possui atestado registrado.`,false); return; }
+    if(data.atestados.some(x=>(x.data || x)===iso)){ ctrlToast(`O dia ${ctrlDateBR(iso)} já possui atestado registrado.`,false); return; }
   }
 
   // 1. Salva localmente os dias de atestado
   for(let i=0;i<dias;i++){
-    data.atestados.push({data:ctrlAddDays(inicio,i), dias:1, obs});
+    data.atestados.push({data:ctrlAddDays(inicio,i), dias:1, obs: obs || '—'});
   }
-  data.atestados.sort((a,b)=>a.data.localeCompare(b.data));
+  data.atestados.sort((a,b)=>(a.data || a).localeCompare(b.data || b));
   salvarControleGcmLocal();
 
   // 2. Salva no Supabase
   if (typeof _supabase !== 'undefined') {
-    await _supabase.from('controle_gcm').insert([
-      { nome_gcm: nome, ano: ano, tipo: 'atestado', data_registro: inicio, dias: dias, observacao: obs }
-    ]);
-
-    // 3. Registra na Auditoria
-    await registrarRastroAuditoria("Lançamento de Atestado Médico", `Servidor: ${nome} | Início: ${inicio} | Dias: ${dias} | Obs: ${obs}`);
+    try {
+      await _supabase.from('controle_gcm').insert([
+        { nome_gcm: nome, ano: ano, tipo: 'atestado', data_registro: inicio, dias: dias, observacao: obs || null }
+      ]);
+      await registrarRastroAuditoria("Lançamento de Atestado Médico", `Servidor: ${nome} | Início: ${inicio} | Dias: ${dias} | Obs: ${obs}`);
+    } catch(err) {
+      console.error("Erro ao salvar atestado no Supabase:", err);
+    }
   }
+
+  const obsInput = document.getElementById('ctrlAtestadoObs');
+  if(obsInput) obsInput.value = '';
 
   renderControleGcmView();
   ctrlToast(`${dias} dia(s) de atestado médico registrado(s) com sucesso!`, true);
 }
-async function ctrlDelete(kind,idx){
-  const {data}=ctrlCurrent(); if(!data) return;
-  const arr=kind==='ab'?data.abonadas:data.atestados;
-  if(!arr[idx]) return;
-  const item=arr[idx];
-  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nExcluir ${kind==='ab'?'a Falta Abonada':'o dia de Atestado'} de ${ctrlDateBR(item.data)}?\n\nOK = confirmar | Cancelar = manter.`)) return;
-  arr.splice(idx,1); const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Lançamento excluído e sincronizado.':'Lançamento excluído localmente; sincronização pendente.',ok);
-}
 async function ctrlLimparAbonadas(){
-  const {nome,ano,data}=ctrlCurrent(); if(!data) return;
-  if(!data.abonadas.length){ ctrlToast('Não há registros de Faltas Abonadas para limpar.',false); return; }
+  const {nome, ano, data} = ctrlCurrent(); 
+  if(!data) return;
+  if(!data.abonadas || data.abonadas.length === 0){ 
+    ctrlToast('Não há registros de Faltas Abonadas para limpar.', false); 
+    return; 
+  }
+  
   if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nVocê está prestes a LIMPAR TODAS as ${data.abonadas.length} Faltas Abonadas de ${nome}, ano ${ano}.\n\nEsta ação não pode ser desfeita.\n\nOK = confirmar | Cancelar = manter.`)) return;
-  data.abonadas=[]; const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Todos os registros de Faltas Abonadas foram limpos e sincronizados.':'Registros limpos localmente; sincronização pendente.',ok);
-}
-async function ctrlLimparAtestados(){
-  const {nome,ano,data}=ctrlCurrent(); if(!data) return;
-  if(!data.atestados.length){ ctrlToast('Não há registros de Atestados para limpar.',false); return; }
-  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nVocê está prestes a LIMPAR TODOS os ${data.atestados.length} dias de Atestado de ${nome}, ano ${ano}.\n\nEsta ação não pode ser desfeita.\n\nOK = confirmar | Cancelar = manter.`)) return;
-  data.atestados=[]; const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Todos os registros de Atestados foram limpos e sincronizados.':'Registros limpos localmente; sincronização pendente.',ok);
+  
+  data.abonadas = [];
+  salvarControleGcmLocal();
+
+  if (typeof _supabase !== 'undefined') {
+    try {
+      const { error } = await _supabase
+        .from('controle_gcm')
+        .delete()
+        .eq('nome_gcm', nome)
+        .eq('ano', ano)
+        .eq('tipo', 'abonada');
+
+      if (error) throw error;
+
+      if (typeof registrarRastroAuditoria === 'function') {
+        await registrarRastroAuditoria(
+          "Limpeza Geral de Faltas Abonadas", 
+          `Servidor: ${nome} | Ano: ${ano} | Todas as abonadas removidas`
+        );
+      }
+
+      ctrlToast("Todas as faltas abonadas foram limpas e sincronizadas.", true);
+    } catch (err) {
+      console.error("Erro ao limpar do Supabase:", err);
+      ctrlToast("Erro ao limpar no banco: " + err.message, false);
+    }
+  }
+
+  renderControleGcmView();
 }
 
+async function ctrlLimparAtestados(){
+  const {nome, ano, data} = ctrlCurrent(); 
+  if(!data) return;
+  if(!data.atestados || data.atestados.length === 0){ 
+    ctrlToast('Não há registros de Atestados para limpar.', false); 
+    return; 
+  }
+  
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nVocê está prestes a LIMPAR TODOS os ${data.atestados.length} dias de Atestado de ${nome}, ano ${ano}.\n\nEsta ação não pode ser desfeita.\n\nOK = confirmar | Cancelar = manter.`)) return;
+  
+  data.atestados = [];
+  salvarControleGcmLocal();
+
+  if (typeof _supabase !== 'undefined') {
+    try {
+      const { error } = await _supabase
+        .from('controle_gcm')
+        .delete()
+        .eq('nome_gcm', nome)
+        .eq('ano', ano)
+        .eq('tipo', 'atestado');
+
+      if (error) throw error;
+
+      if (typeof registrarRastroAuditoria === 'function') {
+        await registrarRastroAuditoria(
+          "Limpeza Geral de Atestados", 
+          `Servidor: ${nome} | Ano: ${ano} | Todos os atestados removidos`
+        );
+      }
+
+      ctrlToast("Todos os atestados foram limpos e sincronizados.", true);
+    } catch (err) {
+      console.error("Erro ao limpar do Supabase:", err);
+      ctrlToast("Erro ao limpar no banco: " + err.message, false);
+    }
+  }
+
+  renderControleGcmView();
+}
 function renderAll(){
   renderKpis();
   renderModo2027();
@@ -2549,7 +2852,7 @@ function renderAll(){
   renderLegend();
   renderHorasExtras();
   bindHorasExtras();
-  renderControleGcm(); // <--- ADICIONE ESTA LINHA AQUI PARA ATIVAR O MÓDULO
+  renderControleGcm(); // <--- ATIVA O MÓDULO DE CONTROLE GCM
   renderParameterSummary();
   renderRankings();
   renderPlantaoCards();
