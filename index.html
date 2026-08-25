@@ -1,0 +1,2697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha Individual do GCM — Impacto Financeiro por Servidor</title>
+
+<!-- 1. BIBLIOTECA DO SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Script de segurança (Kaspersky) que já estava no código -->
+<script type="text/javascript" src="https://gc.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=..." charset="UTF-8"></script>
+
+<style>
+  :root{
+    --ink:#0E1A2B; --ink2:#16283F; --card:#142438; --border:#25405C;
+    --txt:#EAF0F6; --muted:#8FA3B8; --gold:#D4A24C; --danger:#C97A4A; --good:#7FCB9C; --warn:#E0A85C;
+  }
+  @keyframes pulseAlert {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.01); }
+  100% { opacity: 1; transform: scale(1); }
+}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background: radial-gradient(circle at 15% 0%, var(--ink2) 0%, var(--ink) 55%);
+    color:var(--txt); font-family: Georgia, 'Iowan Old Style', Times, serif;
+    min-height:100vh; padding:28px 28px 40px;
+  }
+  .sans{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  button{cursor:pointer; font-family:inherit;}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+
+  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;
+    margin-bottom:22px; border-bottom:1px solid var(--border); padding-bottom:18px;}
+  .eyebrow{color:var(--gold); font-size:11px; letter-spacing:.18em; font-weight:700; margin-bottom:6px;}
+  h1{margin:0; font-weight:400; font-size:26px; letter-spacing:-0.01em;}
+  #bigModeBtn{background:transparent; color:var(--txt); border:1px solid var(--gold); border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600;}
+  #bigModeBtn.on{background:var(--gold); color:var(--ink);}
+
+  .search-panel{background:var(--card); border:1px solid var(--gold); border-radius:16px; padding:22px; margin-bottom:20px; position:relative;}
+  .search-panel h2{margin:0 0 12px; font-size:14px; font-weight:700; color:var(--gold); letter-spacing:.05em; text-transform:uppercase;}
+  #searchInput{width:100%; background:var(--ink2); color:var(--txt); border:1px solid var(--border); border-radius:10px;
+    padding:13px 16px; font-size:16px; font-family:-apple-system,sans-serif;}
+  #searchDropdown{position:absolute; left:22px; right:22px; top:88px; background:#0B1826; border:1px solid var(--border);
+    border-radius:10px; max-height:260px; overflow-y:auto; z-index:30; display:none; box-shadow:0 10px 30px rgba(0,0,0,0.4);}
+  .dd-item{padding:10px 16px; cursor:pointer; font-family:-apple-system,sans-serif; font-size:13.5px; border-bottom:1px solid rgba(37,64,92,0.4);}
+  .dd-item:hover, .dd-item.hi{background:rgba(212,162,76,0.12);}
+  .dd-item .dd-sub{color:var(--muted); font-size:11.5px; margin-top:2px;}
+
+  .layout{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;}
+  .panel{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px;}
+  .panel h2{margin:0 0 14px; font-size:15px; font-weight:700; color:var(--gold); letter-spacing:.03em;}
+  .global-controls{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end;}
+  .gc-item{display:flex; flex-direction:column; gap:5px;}
+  .gc-item label{color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em;}
+  .gc-item input{width:100px; background:var(--ink2); color:var(--txt); border:1px solid var(--border); border-radius:8px; padding:7px 9px; font-size:13.5px;}
+  .gc-check{display:flex; align-items:center; gap:8px;}
+  .gc-check input[type=checkbox]{width:16px; height:16px; accent-color:var(--gold);}
+  .gc-check label{font-size:12.5px; color:var(--txt);}
+
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px;}
+  .kpi{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
+  .kpi .lbl{color:var(--muted); font-size:11px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px;}
+  .kpi .val{font-size:19px; font-weight:700; line-height:1.15;}
+  .kpi .sub{color:var(--muted); font-size:11.5px; margin-top:4px;}
+
+  .profile-card{background:var(--card); border:2px solid var(--gold); border-radius:16px; padding:26px; margin-bottom:20px; display:none;}
+  .profile-head{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--border);}
+  .profile-name{font-size:24px; font-weight:400; color:var(--txt); margin:0;}
+  .profile-tag{display:inline-block; background:rgba(212,162,76,0.15); color:var(--gold); border:1px solid var(--gold); border-radius:20px; padding:4px 14px; font-size:12.5px; font-weight:700; font-family:-apple-system,sans-serif; margin-top:8px;}
+  .close-btn{background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:7px 12px; font-size:12px; font-family:-apple-system,sans-serif;}
+  .info-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; font-family:-apple-system,sans-serif;}
+  .info-item .il{color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;}
+  .info-item .iv{font-size:14px; color:var(--txt);}
+  .breakdown-table{width:100%; border-collapse:collapse; font-family:-apple-system,sans-serif; font-size:14px;}
+  .breakdown-table td{padding:10px 6px; border-bottom:1px solid rgba(37,64,92,0.5);}
+  .breakdown-table td:first-child{color:var(--muted);}
+  .breakdown-table td:last-child{text-align:right; font-weight:600;}
+  .breakdown-table tr.total-row td{border-top:2px solid var(--gold); border-bottom:none; padding-top:14px; font-size:17px; font-weight:700; color:var(--gold);}
+  .bar-composition{display:flex; height:28px; border-radius:6px; overflow:hidden; margin:16px 0; border:1px solid var(--border);}
+  .bar-seg{display:flex; align-items:center; justify-content:center; font-size:10.5px; font-family:-apple-system,sans-serif; color:#0E1A2B; font-weight:700;}
+
+  .legend-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; font-family:-apple-system,sans-serif; font-size:12.5px;}
+  .legend-cls{background:var(--ink2); border-radius:10px; padding:12px;}
+  .legend-cls h3{margin:0 0 8px; font-size:12.5px; color:var(--gold);}
+  .legend-cls div{display:flex; justify-content:space-between; padding:3px 0; color:var(--txt);}
+  .legend-cls div span:first-child{color:var(--muted);}
+
+  table.roster{width:100%; border-collapse:collapse; font-family:-apple-system,sans-serif; font-size:12.5px;}
+  table.roster th{text-align:left; padding:8px 10px; color:var(--muted); border-bottom:1px solid var(--border); font-size:10.5px; text-transform:uppercase; letter-spacing:.03em; cursor:pointer; white-space:nowrap; position: sticky; top: 0; background: var(--card); z-index: 10;}
+  table.roster th.num{text-align:right;}
+  table.roster td{padding:7px 10px; border-bottom:1px solid rgba(37,64,92,0.3); white-space:nowrap;}
+  table.roster td.num{text-align:right;}
+  table.roster th:first-child, table.roster td:first-child {
+    position: sticky; left: 0; background: var(--card);
+  }
+  table.roster th:first-child { z-index: 11; }
+  table.roster td:first-child {
+    z-index: 5; border-right: 1px solid var(--border);
+  }
+  table.roster tr:hover td:first-child { background: #1A2D42; }
+  .table-wrap{max-height:420px; overflow-y:auto; overflow-x:auto;}
+  footer{display:flex; align-items:flex-start; gap:8px; margin-top:16px; color:var(--muted); font-size:11.5px; line-height:1.5;}
+
+  body.modo-leitura #searchInput,
+  body.modo-leitura #tableFilter,
+  body.modo-leitura #cargoFilter,
+  body.modo-leitura #retpInput,
+  body.modo-leitura #riscoInput,
+  body.modo-leitura .novoAnoInput {
+    pointer-events: auto !important; 
+    opacity: 1;
+  }
+  
+  #loginOverlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 15% 0%, var(--ink2) 0%, var(--ink) 55%);
+    z-index: 99999; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; font-family: sans-serif;
+  }
+  .login-box {
+    background: var(--card); border: 1px solid var(--gold); border-radius: 16px;
+    padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .login-box h2 { color: var(--gold); margin-top: 0; margin-bottom: 20px; }
+  .login-box input {
+    width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--ink2); color: var(--txt);
+  }
+  .login-box button {
+    width: 100%; padding: 12px; background: var(--gold); color: var(--ink);
+    border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; } 
+    .kpis { grid-template-columns: 1fr 1fr; } 
+    .info-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpis { grid-template-columns: 1fr; } 
+    .info-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ===== NOVA INTERFACE EM PAINEL ===== */
+  body{padding:0; background:#071522; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+  .app-shell{display:grid;grid-template-columns:270px 1fr;min-height:100vh;}
+  .sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:#0A1725;border-right:1px solid var(--border);padding:18px 14px;z-index:100;}
+  .brand{padding:10px 10px 18px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+  .brand-title{font-family:Georgia,serif;color:var(--gold);font-size:18px;letter-spacing:.02em;}
+  .brand-sub{color:var(--muted);font-size:10px;line-height:1.4;margin-top:4px;}
+  .nav-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;padding:8px 10px 6px;}
+  .nav-btn{width:100%;text-align:left;background:transparent;color:var(--txt);border:1px solid transparent;border-radius:9px;padding:10px 11px;margin:2px 0;font-size:13px;cursor:pointer;}
+  .nav-btn:hover,.nav-btn.active{background:rgba(212,162,76,.11);border-color:rgba(212,162,76,.35);color:var(--gold);}
+  .sidebar-gcms{margin-top:14px;border-top:1px solid var(--border);padding-top:12px;}
+  #sideGcmSearch{width:100%;background:var(--ink2);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:8px 9px;font-size:12px;}
+  #sideGcmList{max-height:360px;overflow:auto;margin-top:7px;}
+  .side-gcm{display:block;width:100%;background:transparent;border:0;border-bottom:1px solid rgba(37,64,92,.28);color:var(--txt);text-align:left;padding:7px 8px;font-size:11.5px;cursor:pointer;}
+  .side-gcm:hover{background:#14283c;color:var(--gold);}
+  .main-shell{min-width:0;padding:22px 28px 40px;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--border);}
+  .section{display:none;}
+  .section.active{display:block;}
+  .home-intro{background:linear-gradient(135deg,#14283c,#0D1C2B);border:1px solid var(--gold);border-radius:16px;padding:24px;margin-bottom:18px;}
+  .home-intro h2{margin:0 0 7px;font-family:Georgia,serif;font-weight:400;font-size:24px;color:var(--txt);}
+  .home-intro p{margin:0;color:var(--muted);font-size:13px;line-height:1.5;}
+  .section-title{font-family:Georgia,serif;font-size:22px;font-weight:400;margin:0 0 6px;color:var(--txt);}
+  .section-sub{margin:0 0 18px;color:var(--muted);font-size:12px;line-height:1.5;}
+  .compare-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px;}
+  .period-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+  .period-card h3{margin:0 0 8px;color:var(--gold);font-size:13px;}
+  .period-card .period-check{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--txt);margin-bottom:8px;}
+  .period-card input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;}
+  .period-values{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .period-value{background:var(--ink2);border-radius:8px;padding:9px;}
+  .period-value .lbl{color:var(--muted);font-size:10px;text-transform:uppercase;}
+  .period-value .val{font-size:14px;font-weight:700;margin-top:3px;}
+  .metric-note{color:var(--muted);font-size:11px;margin-top:10px;line-height:1.4;}
+  .rank-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px;}
+  .rank-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;}
+  .rank-card .n{font-size:22px;font-weight:700;color:var(--gold);}
+  .rank-card .l{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+  .plantao-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+  .plantao-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;}
+  .plantao-card h3{font-size:14px;margin:0 0 6px;color:var(--gold);}
+  .plantao-card p{font-size:12px;color:var(--muted);line-height:1.5;margin:0;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .toolbar select,.toolbar input{background:var(--ink2);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12.5px;}
+  .toolbar .primary{background:var(--gold);color:var(--ink);border:none;font-weight:700;}
+  .selected-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0;}
+  .selected-mini{background:var(--ink2);border:1px solid var(--border);border-radius:10px;padding:11px;}
+  .selected-mini .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;}
+  .selected-mini .val{font-size:16px;font-weight:700;margin-top:3px;color:var(--txt);}
+  .he-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;}
+  .he-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+  .he-card h3{margin:0 0 8px;color:var(--gold);font-size:13px;}
+  .he-field{display:flex;flex-direction:column;gap:5px;}
+  .he-field label{font-size:10px;color:var(--muted);text-transform:uppercase;}
+  .he-field select,.he-field input{width:100%;box-sizing:border-box;background:var(--ink2);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12.5px;}
+  .he-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0;}
+  .he-mini{background:var(--ink2);border:1px solid var(--border);border-radius:10px;padding:11px;}
+  .he-mini .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;}
+  .he-mini .val{font-size:16px;font-weight:700;margin-top:3px;color:var(--txt);}
+  .he-total{border-color:rgba(212,162,76,.45);background:rgba(212,162,76,.06);}
+
+  .he-month-title{color:var(--gold);font-size:13px;font-weight:700;margin-bottom:8px;}
+  .he-zero{color:var(--muted);}
+  .he-day-row.has-he td{background:rgba(212,162,76,.045);}
+  @media(max-width:1100px){.he-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.he-summary{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media(max-width:800px){.he-grid{grid-template-columns:1fr;}.he-summary{grid-template-columns:1fr 1fr;}}
+  .profile-chart-wrap{margin-top:18px;background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+  @media(max-width:1100px){.app-shell{grid-template-columns:220px 1fr}.compare-grid{grid-template-columns:1fr 1fr}.rank-grid{grid-template-columns:repeat(3,1fr)}.plantao-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:800px){.app-shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto;max-height:none}.main-shell{padding:16px}.compare-grid,.plantao-grid{grid-template-columns:1fr}.rank-grid{grid-template-columns:1fr 1fr}.selected-summary{grid-template-columns:1fr 1fr}}
+
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN COM ACIONAMENTO DIRETO -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <h2>Acesso Restrito</h2>
+    <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Painel de Impacto Financeiro</p>
+    
+    <div style="position: relative; margin-bottom: 15px;">
+      <input type="password" id="senhaAcesso" placeholder="Digite sua senha..." onkeydown="if(event.key==='Enter') validarAcesso();" style="width: 100%; padding: 12px 40px 12px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--ink2); color: var(--txt); box-sizing: border-box; margin-bottom: 0;">
+      <span id="togglePassword" onclick="toggleSenhaVisual()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--muted); font-size: 16px;" title="Mostrar/Ocultar senha">👁️</span>
+    </div>
+
+    <button id="btnEntrar" onclick="validarAcesso()">Entrar</button>
+    <p id="erroSenha" style="color:var(--danger); font-size:13px; margin-top:15px; display:none;">Senha incorreta. Tente novamente.</p>
+  </div>
+</div>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">IMPACTO FINANCEIRO</div>
+      <div class="brand-sub">GCM TAUBATÉ · PAINEL DE GESTÃO E PROJEÇÃO</div>
+    </div>
+    <div class="nav-title">Navegação</div>
+    <button class="nav-btn active" data-section="homeSection">⌂ Início · Selecionar GCM</button>
+    <button class="nav-btn" data-section="impactosSection">◈ Impactos / Comparações</button>
+    <button class="nav-btn" data-section="horasExtrasSection">⏱ Horas Extras</button>
+    <button class="nav-btn" data-section="controleGcmSection">📋 Controle GCM</button>
+    <button class="nav-btn" data-section="folhaSection">▣ Folha bruta</button>
+    <button class="nav-btn" data-section="patentesSection">♜ Guardas por patente</button>
+    <button class="nav-btn" data-section="plantoesSection">◷ Plantões e expediente</button>
+    <button class="nav-btn" data-section="graficosSection">▥ Gráficos e projeções</button>
+    <button class="nav-btn" data-section="rosterSection">☷ Todos os GCMs</button>
+    <div class="sidebar-gcms">
+      <div class="nav-title" style="padding-left:0">Acesso rápido aos GCMs</div>
+      <input id="sideGcmSearch" placeholder="Pesquisar GCM..." autocomplete="off">
+      <div id="sideGcmList"></div>
+    </div>
+  </aside>
+
+  <main class="main-shell">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow sans">REFORMULAÇÃO DA LC 391/2016 · GUARDA CIVIL MUNICIPAL DE TAUBATÉ</div>
+        <h1>Impacto Financeiro por Servidor</h1>
+        <div id="welcomeMsg" class="sans" style="color:var(--good);font-size:14px;font-weight:600;margin-top:8px;display:none;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="syncDot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;" title="Status da sincronização"></span>
+        <button id="syncBtn" class="sans" style="background:transparent;color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;">Sincronizar agora</button>
+        <button id="bigModeBtn" class="sans pill">Modo apresentação</button>
+      </div>
+    </div>
+
+    <!-- INÍCIO -->
+    <section id="homeSection" class="section active">
+      <div class="home-intro">
+        <h2>Selecione o GCM</h2>
+        <p>Escolha um servidor pelo nome ou pela lista lateral. A ficha individual abrirá abaixo com dados funcionais, parâmetros, composição do salário, plantão e projeção financeira.</p>
+        <div class="search-panel" style="margin:18px 0 0;padding:18px;">
+          <input type="text" id="searchInput" class="sans" placeholder="Digite o nome do guarda..." autocomplete="off">
+          <div id="searchDropdown"></div>
+        </div>
+      </div>
+      <div id="profileCard" class="profile-card"></div>
+      <div id="profileChartArea"></div>
+    </section>
+
+    <!-- IMPACTOS -->
+    <section id="impactosSection" class="section">
+      <h2 class="section-title">Impactos e comparações</h2>
+      <p class="section-sub">Escolha os períodos que deseja comparar. Cada período pode ser ativado ou desativado individualmente e você pode optar por considerar ou não os novos GCMs.</p>
+      <div class="panel sans">
+        <div class="toolbar">
+          <div class="gc-item"><label>Data de referência</label><input type="date" id="refDateInput" style="width:140px;"></div>
+          <div class="gc-item"><label>RETP (%)</label><input type="number" id="retpInput" value="50" step="1"></div>
+          <div class="gc-item"><label>Risco de Vida (%)</label><input type="number" id="riscoInput" value="30" step="1"></div>
+          <div class="gc-item"><label>Sexta Parte a partir de</label><input type="number" id="sextaAnosInput" value="20" step="1"></div>
+          <label class="gc-check"><input type="checkbox" id="incluirSexta" checked><span>Incluir 6ª Parte</span></label>
+          <div class="gc-item"><label>Férias (%)</label><input type="number" id="feriasInput" value="50" step="5"></div>
+          <label class="gc-check"><input type="checkbox" id="incluirFerias" checked><span>Férias no custo anual</span></label>
+          <label class="gc-check"><input type="checkbox" id="decimoTerceiro" checked><span>13º no custo anual</span></label>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:6px;">
+          <div class="toolbar" style="margin-bottom:4px;">
+            <label class="gc-check"><input type="checkbox" id="compararNovosGcms" checked><span><b>Permitir comparação com novos GCMs</b></span></label>
+            <select id="modo2027Select" style="background:var(--ink2);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12.5px;">
+              <option value="niveis">2027 Com níveis N0/N1/N2</option>
+              <option value="flat">2027 Novo valor-base</option>
+              <option value="comparar">Comparativo Sem Níveis × Com Níveis</option>
+            </select>
+          </div>
+          <p id="modo2027Desc" class="metric-note"></p>
+        </div>
+        <div id="modeloComparisonPanel" class="panel sans" style="display:none;margin-top:16px;background:var(--ink2);">
+          <h2>Comparação — 2027 sem níveis × 2027 com níveis</h2>
+          <p class="metric-note" style="margin-top:-4px;">Compare os dois modelos de remuneração nos próximos 10 anos. A diferença mostra quanto a folha fica maior ou menor no modelo com níveis em relação ao modelo sem níveis.</p>
+          <div class="toolbar" style="margin-bottom:14px;">
+            <div class="gc-item"><label>Selecionar ano</label><select id="modeloComparisonYear" style="background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12.5px;min-width:130px;"></select></div>
+          </div>
+          <div id="modeloComparisonSelected" class="selected-summary" style="margin-top:0;"></div>
+          <div id="modeloComparisonTable" style="overflow-x:auto;"></div>
+        </div>
+        <div class="compare-grid" id="periodCompareGrid"></div>
+      </div>
+
+      <!-- LEGENDA DE SALÁRIO-BASE -->
+      <div class="panel sans" style="margin-top:18px;">
+        <h2>Legenda — Salário-base por Classe/Nível</h2>
+        <p class="metric-note" style="margin-top:-6px;margin-bottom:10px;">
+          Valores-base de referência para các comparações. O valor vigente na data de referência fica destacado em dourado.
+        </p>
+        <div id="legendGrid"></div>
+      </div>
+
+      <div class="panel sans" style="margin-top:18px;">
+        <h2>Quantidade de novos GCMs por ano</h2>
+        <p class="section-sub">Informe quantos novos guardas entram em cada ano. Marque os períodos acima para decidir quais comparações utilizarão esses novos servidores.</p>
+        <div id="novosPorAnoGrid" class="global-controls" style="margin-bottom:14px;"></div>
+        <div id="novosGcmsTableArea"></div>
+      </div>
+    </section>
+
+    <!-- HORAS EXTRAS -->
+    <section id="horasExtrasSection" class="section">
+      <h2 class="section-title">Horas Extras por GCM</h2>
+      <p class="section-sub">Selecione o GCM, o mês e o ano para consulta e fechamento. No resumo de lançamento, escolha o dia exato em que deseja registrar as horas extras.</p>
+
+      <div class="panel sans">
+        <!-- BARRA SUPERIOR COM MÊS, ANO E A OPÇÃO SESOP -->
+        <div class="toolbar" style="background:var(--ink2); padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border);">
+          <div class="gc-item" style="flex:1;min-width:250px;">
+            <label>Selecionar Servidor / Gestão</label>
+            <select id="heGcmSelect" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;">
+              <option value="SESOP">🛡️ SESOP — Painel Consolidado de Horas Extras</option>
+            </select>
+          </div>
+          <div class="gc-item">
+            <label>Mês de Consulta</label>
+            <select id="heFilterMonth" style="background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;min-width:140px;"></select>
+          </div>
+          <div class="gc-item">
+            <label>Ano</label>
+            <select id="heFilterYear" style="background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;min-width:110px;"></select>
+          </div>
+        </div>
+    
+
+        <!-- BOTÃO DE ENVIAR RELATÓRIO MENSAL POR E-MAIL LOGO ABAIXO DA BARRA -->
+        <div style="margin-bottom: 18px;">
+          <button id="enviarEmailBtn" class="sans" style="width:100%; background:var(--ink2); color:var(--gold); border:1px solid var(--gold); border-radius:8px; padding:10px; font-size:12.5px; font-weight:700; cursor:pointer;">
+            📧 Salvar Fechamento do Mês na Nuvem
+          </button>
+        </div>
+        
+
+        <div id="heGcmInfo" class="metric-note" style="margin-top:0;"></div>
+        <div id="heMonthInfo" class="metric-note" style="margin-top:5px;color:var(--gold);"></div>
+        <!-- AVISO DE LIMITE DE 40H EM VERMELHO -->
+        <div id="heLimitAlert" style="display:none; margin: 12px 0; padding: 14px 18px; border-radius: 12px; border: 2px solid #E05C5C; background: rgba(224,92,92,0.15); color: #FF8080; font-size: 15px; font-weight: 700; text-align: center; box-shadow: 0 4px 15px rgba(224,92,92,0.3); animation: pulseAlert 1.5s infinite;">
+          ⚠️ ATENÇÃO: ATINGIU / ULTRAPASSOU AS 40H (limite de 40h mensais)
+        </div>
+
+        <div class="he-grid">
+          <div class="he-card">
+            <h3>Horas do dia</h3>
+            <div class="he-field">
+              <label>Total de horas extras</label>
+              <select id="heTotalHours"></select>
+            </div>
+            <div class="metric-note">Lançamento diário vinculado ao servidor e mês selecionados.</div>
+          </div>
+
+          <div class="he-card">
+            <h3>Percentual da hora extra</h3>
+            <div class="metric-note" style="margin-top:-2px;margin-bottom:10px;">Distribua as horas entre 50% e 100%.</div>
+            <div class="he-field">
+              <label>Horas com adicional de 50%</label>
+              <select id="he50Hours"></select>
+            </div>
+            <div class="he-field" style="margin-top:10px;">
+              <label>Horas com adicional de 100%</label>
+              <select id="he100Hours"></select>
+            </div>
+          </div>
+
+          <div class="he-card">
+            <h3>Adicional noturno — 25%</h3>
+            <div class="metric-note" style="margin-top:-2px;margin-bottom:10px;">Informe quantas horas de cada grupo foram noturnas.</div>
+            <div class="he-field">
+              <label>Das horas de 50%, quantas são noturnas</label>
+              <select id="heNight50Hours"></select>
+            </div>
+            <div class="he-field" style="margin-top:10px;">
+              <label>Das horas de 100%, quantas são noturnas</label>
+              <select id="heNight100Hours"></select>
+            </div>
+          </div>
+
+          <!-- RESUMO DE LANÇAMENTO COM A DATA DO DIA DENTRO -->
+          <div class="he-card he-total">
+            <h3>Resumo do lançamento</h3>
+            <div class="he-field" style="margin-bottom:10px;">
+              <label style="color:var(--gold);">Dia do lançamento</label>
+              <input type="date" id="heDayDate" style="background:var(--ink2);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12.5px;width:100%;">
+            </div>
+            <div id="heFormula" class="metric-note" style="margin-top:0;"></div>
+            <button id="heSaveDayBtn" class="primary sans" style="margin-top:10px;width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:9px 10px;font-size:12px;font-weight:700;cursor:pointer;">Registrar este dia</button>
+            <button id="heClearDayBtn" class="sans" style="margin-top:6px;width:100%;background:transparent;color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12px;cursor:pointer;">Limpar dia selecionado</button>
+          </div>
+        </div>
+
+        <div id="heError" style="display:none;margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid rgba(224,120,120,.45);background:rgba(224,120,120,.08);color:#F0B0B0;font-size:12px;"></div>
+
+        <!-- CARDS INFERIORES COM OS TOTAIS DEMARCADOS DOS LANÇAMENTOS -->
+        <div class="he-summary" id="heSummary"></div>
+      </div>
+
+      <div class="panel sans" style="margin-top:18px;">
+        <h2>Detalhamento diário do mês</h2>
+        <div id="heDailyTable" style="overflow-x:auto;"></div>
+      </div>
+
+      <div class="panel sans" style="margin-top:18px;">
+        <h2>Horas extras cadastradas — visão mensal e geral</h2>
+        <div id="heDailySummary" style="overflow-x:auto;margin-bottom:15px;"></div>
+        <div id="heRosterTable" style="overflow-x:auto;"></div>
+      </div>
+    </section>
+
+<!-- CONTROLE GCM (FALTAS ABONADAS E ATESTADOS) -->
+<section id="controleGcmSection" class="section">
+  <h2 class="section-title">Controle GCM</h2>
+  <p class="section-sub">Controle individual de Faltas Abonadas e Atestados, com histórico anual, saldo disponível e bloqueio automático após 6 abonadas no ano.</p>
+
+  <div class="panel sans">
+    <div class="toolbar" style="background:var(--ink2); padding:14px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border);">
+      <div class="gc-item" style="flex:1;min-width:280px;">
+        <label>Selecionar GCM</label>
+        <select id="ctrlGcmSelect" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;"></select>
+      </div>
+      <div class="gc-item" style="min-width:170px;">
+        <label>Ano de Referência</label>
+        <select id="ctrlFilterYear" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;"></select>
+      </div>
+      <div class="gc-item" style="min-width:170px;">
+        <label>Mês para Consulta</label>
+        <select id="ctrlFilterMonth" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;">
+          <option value="all">Todos os meses</option><option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option><option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option><option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="ctrlGcmInfo" class="metric-note" style="margin:-3px 0 8px;"></div><div id="cloudSyncStatus" class="metric-note" style="margin:0 0 14px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--ink2);">☁️ Verificando sincronização...</div>
+
+    <div id="ctrlLimitAlert" style="display:none; margin:12px 0; padding:14px 18px; border-radius:12px; border:2px solid #E05C5C; background:rgba(224,92,92,0.15); color:#FF8080; font-size:15px; font-weight:700; text-align:center; box-shadow:0 4px 15px rgba(224,92,92,0.3);">
+      ⚠️ ATENÇÃO: O limite máximo de 6 Faltas Abonadas anuais foi atingido. Não é permitido registrar outra abonada neste ano.
+    </div>
+
+    <div id="ctrlResumoCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 18px;"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      <div class="he-card" style="background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <h3 style="color:var(--gold);margin-top:0;">Falta Abonada</h3>
+        <div class="metric-note" style="margin-bottom:12px;">São permitidas até <b>06 Faltas Abonadas por ano</b>. Escolha o dia e o mês do lançamento.</div>
+        <div class="he-field" style="margin-bottom:12px;">
+          <label>Dia da Falta Abonada</label>
+          <input type="date" id="ctrlAbonadaDate" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
+        </div>
+        <button id="ctrlClearAbonadaBtn" class="sans" style="width:100%;margin-top:7px;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Limpar registros de Faltas Abonadas</button><button id="ctrlSaveAbonadaBtn" class="primary sans" style="width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">Registrar Falta Abonada</button>
+      </div>
+
+      <div class="he-card" style="background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <h3 style="color:var(--gold);margin-top:0;">Atestado</h3>
+        <div class="metric-note" style="margin-bottom:12px;">Informe a data inicial e a quantidade de dias. O sistema registrará <b>cada dia individualmente</b>.</div>
+        <div class="he-field" style="margin-bottom:12px;">
+          <label>Data inicial do Atestado</label>
+          <input type="date" id="ctrlAtestadoDate" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
+        </div>
+        <div class="he-field" style="margin-bottom:12px;">
+          <label>Quantidade de Dias</label>
+          <input type="number" id="ctrlAtestadoDias" value="1" min="1" max="365" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
+        </div>
+        <div class="he-field" style="margin-bottom:12px;">
+          <label>Observação (opcional)</label>
+          <input type="text" id="ctrlAtestadoObs" maxlength="200" placeholder="Ex.: Atestado apresentado" style="width:100%;box-sizing:border-box;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;">
+        </div>
+        <button id="ctrlClearAtestadoBtn" class="sans" style="width:100%;margin-top:7px;background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Limpar registros de Atestados</button><button id="ctrlSaveAtestadoBtn" class="sans" style="width:100%;background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">Registrar Atestado</button>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;">
+      <h3 style="color:var(--gold);font-size:15px;margin-bottom:10px;">Histórico do GCM</h3>
+      <div id="ctrlHistoricoTable" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+</section>
+
+    <!-- FOLHA -->
+    <section id="folhaSection" class="section">
+      <h2 class="section-title">Folha bruta</h2>
+      <p class="section-sub">Visão rápida da folha atual e da folha projetada para 2027, com opção de alterar os parâmetros do cálculo na área de Impactos.</p>
+      <div class="kpis sans" id="kpiArea"></div>
+      <div class="kpis sans" id="antesDepoisArea"></div>
+      <div class="panel sans" style="margin-top:18px;">
+        <h2>Parâmetros utilizados</h2>
+        <div id="parameterSummary" class="selected-summary"></div>
+        <p class="metric-note">RETP somente para quem possui porte; 6ª Parte conforme tempo mínimo configurado; férias e 13º seguem as opções marcadas em Impactos.</p>
+      </div>
+    </section>
+
+    <!-- PATENTES -->
+    <section id="patentesSection" class="section">
+      <h2 class="section-title">Guardas por patente / cargo</h2>
+      <p class="section-sub">Distribuição dos GCMs por classe, nível e cargos especiais cadastrados no painel.</p>
+      <div id="rankGrid" class="rank-grid"></div>
+      <div class="panel sans"><div id="rankTableArea"></div></div>
+    </section>
+
+    <!-- PLANTÕES -->
+    <section id="plantoesSection" class="section">
+      <h2 class="section-title">Informações dos plantões e expediente</h2>
+      <p class="section-sub">Consulte os regimes, horários e adicional noturno. A atribuição de plantão continua disponível na ficha individual do GCM.</p>
+      <div class="plantao-grid" id="plantaoCards"></div>
+      <div class="panel sans" style="margin-top:18px;">
+        <div id="plantaoRosterArea"></div>
+        <div id="plantaoAutoStamp" class="sans" style="color:var(--muted);font-size:11px;margin-top:10px;">Aguardando atualização automática...</div>
+      </div>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section id="graficosSection" class="section">
+      <h2 class="section-title">Gráficos e projeções</h2>
+      <p class="section-sub">Marque livremente os anos que deseja visualizar. O gráfico separa o quadro atual do impacto dos novos GCMs.</p>
+      <div class="panel sans">
+        <div id="yearChecks" class="global-controls" style="margin-bottom:18px;"></div>
+        <div id="yearChartArea"></div>
+      </div>
+    </section>
+
+    <!-- TODOS OS GCMS -->
+    <section id="rosterSection" class="section">
+      <h2 class="section-title">Todos os GCMs</h2>
+      <p class="section-sub">Clique em uma linha para abrir a ficha individual.</p>
+      <div class="panel sans">
+        <div class="toolbar">
+          <input type="text" id="tableFilter" class="sans" placeholder="Filtrar por nome ou classe..." style="flex:1;min-width:200px;">
+          <select id="cargoFilter" class="sans" style="min-width:240px;"><option value="">GCM por Cargo / Nível (Todos)</option></select>
+          <button id="exportCsvBtn" class="primary sans">📥 Exportar p/ Excel</button>
+        </div>
+        <div class="table-wrap"><table class="roster" id="rosterTable"></table></div>
+      </div>
+    </section>
+<div style="text-align:center; margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+  <div class="eyebrow sans" style="margin-bottom:8px;">IMPACTO FINANCEIRO GCM TAUBATÉ</div>
+  <div style="font-size:18px; font-style:italic; color:var(--txt); margin-bottom:6px;">by Robson Ismael de Oliveira Aquino</div>
+  <div class="sans" id="generatedStamp" style="font-size:11px; color:var(--muted); letter-spacing:.03em;"></div>
+</div>
+
+<footer class="sans" style="margin-top:20px; justify-content:center;">
+  <span id="eligibleCount" class="tabular" style="color:var(--gold); font-weight:700; font-size:14px;"></span>
+</footer>
+
+<script>
+document.getElementById("generatedStamp").textContent = "Consulta gerada em " + new Date().toLocaleDateString("pt-BR") + " às " + new Date().toLocaleTimeString("pt-BR", {hour:'2-digit', minute:'2-digit'});
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// ROSTER DATA (27 registros iniciais de base)
+// ---------------------------------------------------------------------------
+let ROSTER = [
+  {"nome": "Adilson Lemes da Silva", "mat": "4225", "classe": 3, "admissao": "01/03/2012", "nascimento": "15/05/1980", "email": "adilson@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Adilson Ramos", "mat": "4226", "classe": 2, "admissao": "01/03/2010", "nascimento": "20/10/1975", "email": "ramos@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Adriana de Souza", "mat": "4227", "classe": 1, "admissao": "15/08/2005", "nascimento": "10/12/1982", "email": "adriana@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Alessandro Ribeiro", "mat": "4228", "classe": 3, "admissao": "10/05/2015", "nascimento": "05/03/1988", "email": "alessandro@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Alexandre da Silva", "mat": "4229", "classe": 2, "admissao": "20/09/2011", "nascimento": "22/07/1979", "email": "alexandre@taubate.sp.gov.br", "possuiPorte": false},
+  {"nome": "Aline Cristina", "mat": "4230", "classe": 3, "admissao": "01/02/2016", "nascimento": "14/09/1990", "email": "aline@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Anderson Luiz", "mat": "4231", "classe": 2, "admissao": "12/11/2008", "nascimento": "30/01/1977", "email": "anderson@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Andre Luis", "mat": "4232", "classe": 1, "admissao": "05/04/2003", "nascimento": "18/06/1974", "email": "andre@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Antonio Carlos", "mat": "4233", "classe": 3, "admissao": "22/07/2014", "nascimento": "09/11/1985", "email": "antonio@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Arthur Ramos", "mat": "4234", "classe": 2, "admissao": "14/02/2009", "nascimento": "02/04/1981", "email": "arthur@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Beatriz Souza", "mat": "4235", "classe": 3, "admissao": "18/08/2017", "nascimento": "25/12/1992", "email": "beatriz@taubate.sp.gov.br", "possuiPorte": false},
+  {"nome": "Bruno dos Santos Nogueira", "mat": "4236", "classe": 1, "admissao": "10/01/2006", "nascimento": "11/02/1980", "email": "bruno.nogueira@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Carlos Eduardo dos Santos", "mat": "4237", "classe": 1, "admissao": "01/03/2000", "nascimento": "04/07/1970", "email": "carlos.eduardo@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Daniela Cristina", "mat": "4238", "classe": 3, "admissao": "05/06/2013", "nascimento": "19/08/1987", "email": "daniela@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Ednaldo de Siqueira Fernandes", "mat": "4239", "classe": 1, "admissao": "15/09/2002", "nascimento": "28/10/1972", "email": "ednaldo@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Felipe Berti Braga", "mat": "4240", "classe": 2, "admissao": "10/08/2010", "nascimento": "12/03/1983", "email": "felipe@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Gilmar Francisco Pereira", "mat": "4241", "classe": 1, "admissao": "01/07/2004", "nascimento": "06/01/1976", "email": "gilmar@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Henrique Aparecido Pereira da Silva", "mat": "4242", "classe": 1, "admissao": "12/02/2001", "nascimento": "30/05/1971", "email": "henrique@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "José Giovani Malosti", "mat": "4243", "classe": 1, "admissao": "20/04/2001", "nascimento": "15/11/1973", "email": "giovani@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Marco José Pereira", "mat": "4244", "classe": 1, "admissao": "05/09/2005", "nascimento": "21/04/1978", "email": "marco@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Michael Wesley Barreto Costa", "mat": "4245", "classe": 1, "admissao": "11/10/2006", "nascimento": "03/09/1982", "email": "michael@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Otávio William Jesus Silva", "mat": "4246", "classe": 1, "admissao": "14/03/2007", "nascimento": "27/02/1984", "email": "otavio@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Pedro Elias Neto", "mat": "4247", "classe": 1, "admissao": "19/06/2004", "nascimento": "08/08/1977", "email": "pedro@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Rafael Aparecido de Oliveira", "mat": "4248", "classe": 2, "admissao": "01/02/2012", "nascimento": "11/10/1986", "email": "rafael@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Rodnei Monteiro dos Santos", "mat": "4249", "classe": 1, "admissao": "10/05/2002", "nascimento": "24/12/1975", "email": "rodnei@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Thamires Aparecida Almeida de Oliveira", "mat": "4250", "classe": 1, "admissao": "15/08/2008", "nascimento": "05/06/1985", "email": "thamires@taubate.sp.gov.br", "possuiPorte": true},
+  {"nome": "Wagner de Oliveira", "mat": "4251", "classe": 1, "admissao": "02/01/2005", "nascimento": "16/07/1979", "email": "wagner@taubate.sp.gov.br", "possuiPorte": true}
+];
+
+const SALARY_TABLE = {
+  3: { n0: 2151.68, n1: 2678.40, n2: +(2678.40*1.05).toFixed(2) },
+  2: { n0: 3239.96, n1: 3439.98, n2: +(3439.98*1.05).toFixed(2) },
+  1: { flat: 4879.08 },
+};
+
+const CARGO_OVERRIDES = {
+  "Thamires Aparecida Almeida de Oliveira": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Bruno dos Santos Nogueira": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Otávio William Jesus Silva": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Pedro Elias Neto": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Gilmar Francisco Pereira": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Michael Wesley Barreto Costa": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Marco José Pereira": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "Wagner de Oliveira": { novoBase: 5513.83, cargo: "Subinspetor" },
+  "José Giovani Malosti": { novoBase: 6637.20, cargo: "Inspetor" },
+  "Ednaldo de Siqueira Fernandes": { novoBase: 6637.20, cargo: "Inspetor" },
+  "Bruno Anselmo de Souza da Costa": { novoBase: 6637.20, cargo: "Inspetor" },
+  "Rodnei Monteiro dos Santos": { novoBase: 6637.20, cargo: "Inspetor" },
+  "Henrique Aparecido Pereira da Silva": { novoBase: 8088.08, cargo: "Subcomandante" },
+  "Carlos Eduardo dos Santos": { novoBase: 9710.67, cargo: "Comandante" },
+};
+
+const PLANTAO_INFO = {
+  "Alfa":         { noturno: false, label: "Alfa — Diurno 12x36 (06h–18h)", color: "#4FB8AE", horasNoturnas: 0 },
+  "Bravo":        { noturno: false, label: "Bravo — Diurno 12x36 (06h–18h)", color: "#6FA8D8", horasNoturnas: 0 },
+  "Charlie":      { noturno: true,  label: "Charlie — Noturno 12x36 (18h–06h)", color: "#8B7FC9", horasNoturnas: 7 },
+  "Delta":        { noturno: true,  label: "Delta — Noturno 12x36 (18h–06h)", color: "#E0A85C", horasNoturnas: 7 },
+  "Administrativo":{ noturno: false, label: "Administrativo — 40h semanais", color: "#8FA3B8", horasNoturnas: 0 },
+  "ROMU":         { noturno: true,  label: "ROMU — 12x36 (14h–02h)", color: "#C97A4A", horasNoturnas: 4 },
+};
+const HORAS_NOTURNAS_REFERENCIA = 7;
+const PLANTAO_DEFAULTS = {
+  "Felipe Berti Braga": "ROMU",
+  "Rafael Aparecido de Oliveira": "ROMU",
+  "Ewerton Soares da Silva": "ROMU",
+  "Robson Minoni Moreira": "ROMU",
+  "Devanir Moreira dos Santos": "ROMU",
+  "Walter Batista dos Santos Junior": "ROMU",
+  "Felipe Alisson Macedo Leite": "ROMU",
+  "Mauro Willians de Moraes": "ROMU",
+  "Marcio Rodrigo Rocha Reis": "ROMU",
+  "Michael Wesley Barreto Costa": "ROMU",
+  "Alison Augusto da Silva Souza": "ROMU",
+  "Jonathan Moreira Santos": "ROMU",
+  "Mauro Alves Ferreira": "ROMU",
+  "Larissa Valéria Almeida de Oliveira": "Administrativo", // Alterar aqui o plantão quando quiser
+  "Thamires Aparecida Almeida de Oliveira": "Administrativo"
+};
+
+const PLANTAO_STORAGE_KEY = "gcm_taubate_plantoes_v1";
+
+function carregarPlantoes(){
+  let salvos = {};
+  try {
+    const raw = localStorage.getItem(PLANTAO_STORAGE_KEY);
+    if(raw) salvos = JSON.parse(raw);
+  } catch(e){ }
+  return Object.assign({}, PLANTAO_DEFAULTS, salvos);
+}
+function salvarPlantoes(){
+  try { localStorage.setItem(PLANTAO_STORAGE_KEY, JSON.stringify(PLANTAO_MAP)); }
+  catch(e){ }
+}
+
+let PLANTAO_MAP = carregarPlantoes(); 
+
+const MUTED="#8FA3B8", TXT="#EAF0F6", BORDER="#25405C", GOLD="#D4A24C";
+const LEVEL_COLORS = ["#8FDCD4","#4FB8AE","#2E7D75"];
+
+const state = { retp:50, risco:30, sextaAnos:20, incluirSexta:true, feriasPct:50, incluirFerias:true, decimo:true, big:false, selected:null, sortKey:'nome', sortDir:1, chartYears:new Set([2026,2027]), novosGcmsPorAno:{2027:30,2028:0,2029:0,2030:0,2031:0,2032:0,2033:0,2034:0,2035:0,2036:0}, adicionalNoturnoPct:25, modo2027:'niveis', compararNovosGcms:true, periodPairs:new Set(['2026-2027']), periodIncludeNew:new Set(['2026-2027']), modeloComparisonYear:2027, horasExtras:{}, controleGcm:{} };
+const NOVOS_ANOS = [2027,2028,2029,2030,2031,2032,2033,2034,2035,2036];
+
+// CONFIGURAÇÃO DO BANCO DE DADOS EM NUVEM (JSONBin.io)
+const CLOUD_DB_CONFIG = {
+  binId: "6a8b26c6da38895dfe076208",
+  masterKey: "$2a$10$8vi.ORtibm32sOuNp2Xmt.P/2M4zIzx2Q4zJxEmHpPt/1dB1E3s2O"
+};
+
+let cloudSyncState = 'unknown';
+let cloudSyncPending = false;
+function setCloudSyncStatus(status, message){
+  cloudSyncState=status;
+  const el=document.getElementById('cloudSyncStatus');
+  if(!el) return;
+  const cfg={ok:['🟢','Sincronizado com a nuvem.'],pending:['🟠','Alteração salva neste computador, aguardando sincronização.'],error:['🔴','Erro ao sincronizar com a nuvem.'],loading:['🔄','Salvando na nuvem...'],unknown:['☁️','Sincronização ainda não verificada.']}[status]||['☁️','Status desconhecido.'];
+  el.innerHTML=`${cfg[0]} <b>${message||cfg[1]}</b>${(status==='error'||status==='pending')?` <button type="button" id="retryCloudBtn" style="margin-left:8px;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:700;">Sincronizar novamente</button>`:''}`;
+  document.getElementById('retryCloudBtn')?.addEventListener('click', async()=>{ await salvarDadosNaNuvem(); });
+}
+// ===========================================================================
+
+async function salvarDadosNaNuvem() {
+  if (typeof _supabase === 'undefined') return false;
+
+  try {
+    setCloudSyncStatus('loading', 'Salvando dados no Supabase...');
+
+    // 1. Salva os plantões
+    for (const [nomeGcm, plantaoNome] of Object.entries(PLANTAO_MAP)) {
+      await _supabase
+        .from('plantoes')
+        .upsert({ nome_gcm: nomeGcm, plantao: plantaoNome, atualizado_em: new Date() }, { onConflict: 'nome_gcm' });
+    }
+
+    setCloudSyncStatus('ok', 'Salvo com sucesso no Supabase!');
+    return true;
+  } catch (err) {
+    console.error("Erro ao salvar no Supabase:", err);
+    setCloudSyncStatus('error', 'Erro ao salvar na nuvem.');
+    return false;
+  }
+}
+
+async function carregarDadosDaNuvem() {
+  if (typeof _supabase === 'undefined') return;
+
+  try {
+    setCloudSyncStatus('loading', 'Carregando dados do Supabase...');
+
+    // 1. Carregar Plantões
+    const { data: dataPlantoes, error: errPlantoes } = await _supabase.from('plantoes').select('*');
+    if (!errPlantoes && dataPlantoes) {
+      dataPlantoes.forEach(row => {
+        if (row.nome_gcm && row.plantao) {
+          PLANTAO_MAP[row.nome_gcm] = row.plantao;
+        }
+      });
+      salvarPlantoes();
+    }
+
+    // 2. Carregar Controle GCM (Abonadas e Atestados)
+    const { data: dataControle, error: errControle } = await _supabase.from('controle_gcm').select('*');
+    if (!errControle && dataControle) {
+      state.controleGcm = {};
+      dataControle.forEach(row => {
+        const nome = row.nome_gcm;
+        const ano = row.ano;
+        if (!state.controleGcm[nome]) state.controleGcm[nome] = {};
+        if (!state.controleGcm[nome][ano]) state.controleGcm[nome][ano] = { abonadas: [], atestados: [] };
+
+        if (row.tipo === 'abonada') {
+          state.controleGcm[nome][ano].abonadas.push(row.data_registro);
+        } else if (row.tipo === 'atestado') {
+          state.controleGcm[nome][ano].atestados.push({ data: row.data_registro, dias: row.dias, obs: row.observacao });
+        }
+      });
+      salvarControleGcmLocal();
+    }
+
+    setCloudSyncStatus('ok', 'Sincronizado com o Supabase.');
+  } catch (err) {
+    console.error("Erro ao carregar do Supabase:", err);
+    setCloudSyncStatus('error', 'Falha ao carregar dados da nuvem.');
+  }
+}
+
+// 3. Função de Rastreabilidade (Logs de Auditoria)
+async function registrarRastroAuditoria(acao, detalhes) {
+  if (typeof _supabase === 'undefined') return;
+  try {
+    const usuarioAtivo = state.usuarioLogado || (document.body.classList.contains('modo-leitura') ? 'Comandante (SESOP)' : 'Robson Ismael');
+    await _supabase.from('logs_auditoria').insert([
+      { usuario: usuarioAtivo, acao: acao, detalhes: detalhes }
+    ]);
+  } catch (err) {
+    console.error("Erro ao registrar rastro de auditoria:", err);
+  }
+}
+
+// A partir daqui continuam as funções normais do seu painel:
+function fmtBRL0(v){ return "R$ " + Math.round(v).toLocaleString("pt-BR"); }
+function fmtBRLfull(v){ return "R$ " + v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}); }
+function parseDateBR(str){
+  if(!str) return null;
+  str = String(str).trim();
+  
+  // Formato brasileiro: DD/MM/AAAA ou D/M/AAAA
+  const mBR = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(mBR) {
+    // Valida se o primeiro número parece ser o dia (> 12) ou se assume padrão BR
+    return new Date(+mBR[3], +mBR[2]-1, +mBR[1]);
+  }
+
+  // Formato americano (M/D/AAAA ou MM/DD/AAAA) gerado pelo Sheets
+  const mUS = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(mUS) {
+    return new Date(+mUS[3], +mUS[1]-1, +mUS[2]);
+  }
+
+  // Se vier no formato M/D/AAAA com barras (ex: 5/17/1994)
+  const parts = str.split('/');
+  if(parts.length === 3 && parts[2].length === 4) {
+    // Assume Mês/Dia/Ano se o primeiro número for <= 12 e o segundo puder ser dia
+    const p1 = +parts[0], p2 = +parts[1], p3 = +parts[2];
+    if(p1 <= 12 && p2 <= 31) {
+      return new Date(p3, p1 - 1, p2); // Mês, Dia, Ano
+    }
+  }
+
+  const mISO = str.match(/^(\d{4})-(\d{2})-(\d{2})/); 
+  if(mISO) return new Date(+mISO[1], +mISO[2]-1, +mISO[3]);
+  
+  return null;
+}
+function dateToBR(d){
+  if(!d) return null;
+  return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();
+}
+function yearsBetween(a,b){ return (b-a)/(1000*60*60*24*365.25); }
+function levelForTempo(t){ if(t<3) return 0; if(t<6) return 1; return 2; }
+function atsPercent(anos){ return (Math.pow(1.02, Math.max(0,anos)) - 1) * 100; }
+
+function todayISO(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return yyyy + "-" + mm + "-" + dd;
+}
+function refDate(){
+  const v = document.getElementById("refDateInput").value;
+  return v ? new Date(v) : new Date();
+}
+
+function reajusteFactor(date){
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1; 
+  if(y > 2028 || (y === 2028 && m >= 3)) return 1.025 * 1.02; 
+  if(y > 2027 || (y === 2027 && m >= 1)) return 1.025;         
+  return 1.0;
+}
+
+const FLAT_2026 = { 3: 2151.69, 2: 2678.40, 1: 4879.08 };
+const FLAT_2027 = { 3: 2678.40, 2: 3239.96, 1: 4879.08 }; 
+
+function computeFinance(rec, refOverride){
+  const adm = parseDateBR(rec.admissao) || refOverride || refDate();
+  const ref = refOverride || refDate();
+  const tempo = Math.max(0, yearsBetween(adm, ref));
+  const reajuste = reajusteFactor(ref);
+  const is2027OrLater = ref >= new Date(2027,0,1);
+
+  let nivel = null, salarioBase;
+  
+  if(!is2027OrLater){
+    salarioBase = FLAT_2026[rec.classe];
+  } 
+  else if(state.modo2027 === 'flat') {
+    salarioBase = FLAT_2027[rec.classe];
+  } 
+  else {
+    if(rec.classe===3){ nivel = levelForTempo(tempo); salarioBase = [SALARY_TABLE[3].n0, SALARY_TABLE[3].n1, SALARY_TABLE[3].n2][nivel]; }
+    else if(rec.classe===2){ nivel = levelForTempo(tempo); salarioBase = [SALARY_TABLE[2].n0, SALARY_TABLE[2].n1, SALARY_TABLE[2].n2][nivel]; }
+    else { salarioBase = SALARY_TABLE[1].flat; }
+  }
+  salarioBase = salarioBase * reajuste;
+
+  const override = CARGO_OVERRIDES[rec.nome];
+  const baseOriginal = salarioBase;
+  const cargoEspecial = override ? override.cargo : null;
+  const baseExibida = override ? override.novoBase * reajuste : salarioBase;
+
+  const anosCompletos = Math.floor(tempo);
+  const anuenioPct = atsPercent(anosCompletos);
+  const anuenioValor = salarioBase * anuenioPct/100;
+  const retpValor = rec.possuiPorte ? (salarioBase + anuenioValor) * state.retp/100 : 0;
+  const riscoValor = salarioBase * state.risco/100;
+
+  const elegivelSexta = tempo >= state.sextaAnos;
+  const baseSemNoturno = baseExibida + anuenioValor + retpValor + riscoValor;
+  const sextaValor = (state.incluirSexta && elegivelSexta) ? baseSemNoturno / 6 : 0;
+
+  const plantaoKey = PLANTAO_MAP[rec.nome] || null;
+  const plantaoInfo = plantaoKey ? PLANTAO_INFO[plantaoKey] : null;
+  const elegivelNoturno = !!(plantaoInfo && plantaoInfo.noturno);
+  
+  let adicionalNoturnoValor = 0;
+  let pctNoturnoEfetivo = 0;
+
+  if (elegivelNoturno) {
+    const baseNoturno = baseExibida + riscoValor + sextaValor + retpValor; 
+    const valorHoraNoturna = (baseNoturno / 200) / 4; 
+    const horasNoMes = plantaoInfo.horasNoturnas * 13;
+    adicionalNoturnoValor = valorHoraNoturna * horasNoMes;
+    pctNoturnoEfetivo = (adicionalNoturnoValor / baseNoturno) * 100; 
+  }
+
+  const brutoMensal = baseSemNoturno + sextaValor + adicionalNoturnoValor;
+  const brutoAntesSexta = baseSemNoturno; 
+  const baseDecimo = baseSemNoturno + sextaValor; 
+  
+  const feriasValor = state.incluirFerias ? brutoMensal * state.feriasPct/100 : 0;
+  const salariosNoAno = (brutoMensal * 12) + (state.decimo ? baseDecimo : 0);
+  const brutoAnual = salariosNoAno + feriasValor;
+
+  let idade = null;
+  if(rec.nascimento){
+    const nasc = parseDateBR(rec.nascimento);
+    if(nasc) idade = ref.getFullYear() - nasc.getFullYear();
+  }
+  return { tempo, nivel, salarioBase: baseExibida, baseOriginal, cargoEspecial, reajuste, anuenioPct, anuenioValor, retpValor, riscoValor, plantaoKey, elegivelNoturno, pctNoturnoEfetivo, adicionalNoturnoValor, sextaValor, elegivelSexta, feriasValor, brutoAntesSexta, brutoMensal, brutoAnual, idade };
+}
+
+function tempoLabel(tempoAnos){
+  const anos = Math.floor(tempoAnos);
+  const mesesFrac = (tempoAnos - anos) * 12;
+  const meses = Math.floor(mesesFrac);
+  return anos + " anos e " + meses + " meses";
+}
+function classeLabel(classe, nivel, cargoEspecial){
+  const base = classe===3?"3ª Classe": classe===2?"2ª Classe":"1ª Classe";
+  const baseLbl = nivel!==null ? base + " — Nível " + nivel : base;
+  if(cargoEspecial) return cargoEspecial + " (quadro " + baseLbl + ")";
+  return baseLbl;
+}
+
+function renderKpis(){
+  const el = document.getElementById("kpiArea");
+  let totalMensal=0, totalAnual=0, totalNoturno=0, qtdNoturno=0;
+  const porClasse = {3:0,2:0,1:0};
+  ROSTER.forEach(rec=>{
+    const f = computeFinance(rec);
+    totalMensal += f.brutoMensal;
+    totalAnual += f.brutoAnual;
+    porClasse[rec.classe]++;
+    if(f.elegivelNoturno){ totalNoturno += f.adicionalNoturnoValor; qtdNoturno++; }
+  });
+  el.innerHTML = `
+    <div class="kpi"><div class="lbl">Total de GCMs (dados válidos)</div><div class="val tabular">${ROSTER.length}</div><div class="sub">3ª: ${porClasse[3]} · 2ª: ${porClasse[2]} · 1ª: ${porClasse[1]}</div></div>
+    <div class="kpi"><div class="lbl">Folha bruta mensal total</div><div class="val tabular" style="color:${GOLD}">${fmtBRL0(totalMensal)}</div><div class="sub">Soma de todos os salários brutos</div></div>
+    <div class="kpi"><div class="lbl">Folha bruta anual total</div><div class="val tabular" style="color:${GOLD}">${fmtBRL0(totalAnual)}</div><div class="sub">${state.decimo?'Com 13º salário':'Sem 13º salário'}</div></div>
+    <div class="kpi"><div class="lbl">Gasto mensal c/ adicional noturno</div><div class="val tabular" style="color:${qtdNoturno?'#E0A85C':MUTED}">${fmtBRL0(totalNoturno)}</div><div class="sub">${qtdNoturno} GCM(s) em Charlie/Delta/ROMU</div></div>
+  `;
+}
+
+function renderProfile(rec){
+  const el = document.getElementById("profileCard");
+  if(!el) return; 
+  if(!rec){ el.style.display="none"; return; }
+  
+  const f = computeFinance(rec);
+  el.style.display = "block";
+  
+  const segs = [
+    {label:"Base", val:f.salarioBase, color:"#4FB8AE"},
+    {label:"Anuênio", val:f.anuenioValor, color:"#6FA8D8"},
+    {label:"RETP", val:f.retpValor, color:"#E0A85C"},
+    {label:"Risco", val:f.riscoValor, color:"#D4A24C"},
+    {label:"6ª Parte", val:f.sextaValor, color:"#9C7CC9"},
+    {label:"Noturno", val:f.adicionalNoturnoValor, color:"#8B7FC9"},
+  ];
+  const barHtml = segs.map(s=>`<div class="bar-seg" style="width:${(s.val/f.brutoMensal*100).toFixed(2)}%; background:${s.color};" title="${s.label}: ${fmtBRLfull(s.val)}">${(s.val/f.brutoMensal*100)>8?s.label:''}</div>`).join("");
+
+  const plantaoOptions = ['<option value="">— não definido —</option>'].concat(
+    Object.keys(PLANTAO_INFO).map(k => `<option value="${k}" ${f.plantaoKey===k?'selected':''}>${PLANTAO_INFO[k].label}</option>`)
+  ).join("");
+
+  el.innerHTML = `
+    <div class="profile-head">
+      <div>
+        <p class="profile-name">${rec.nome}</p>
+        <span class="profile-tag">${classeLabel(rec.classe, f.nivel, f.cargoEspecial)}</span>
+      </div>
+      <button class="close-btn sans" id="closeProfileBtn">Fechar ficha ✕</button>
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><div class="il">Matrícula</div><div class="iv">${rec.mat || '—'}</div></div>
+      <div class="info-item"><div class="il">Data de Nascimento</div><div class="iv">${rec.nascimento && f.idade!==null ? rec.nascimento+' ('+f.idade+' anos)' : (rec.nascimento||'—')+' <span style="color:var(--warn)">— data incompleta na original</span>'}</div></div>
+      <div class="info-item"><div class="il">E-mail</div><div class="iv" style="word-break:break-all;">${rec.email || 'não informado'}</div></div>
+      <div class="info-item"><div class="il">Data de Admissão</div><div class="iv">${rec.admissao}</div></div>
+      <div class="info-item"><div class="il">Tempo de Serviço</div><div class="iv">${tempoLabel(f.tempo)}</div></div>
+      <div class="info-item"><div class="il">Anuênio (2%/ano composto)</div><div class="iv tabular">${f.anuenioPct.toFixed(2)}%</div></div>
+      <div class="info-item">
+        <div class="il">Possui Porte (RETP)</div>
+        <select id="porteSelect" class="sans" style="width:100%; background:var(--ink2); color:var(--txt); border:1px solid var(--border); border-radius:6px; padding:5px 7px; font-size:12.5px;">
+          <option value="true" ${rec.possuiPorte ? 'selected' : ''}>SIM — Recebe RETP</option>
+          <option value="false" ${!rec.possuiPorte ? 'selected' : ''}>NÃO — Sem RETP</option>
+        </select>
+      </div>
+      <div class="info-item"><div class="il">Risco de Vida aplicado</div><div class="iv">${state.risco}% sobre o salário-base</div></div>
+      <div class="info-item">
+        <div class="il">Plantão</div>
+        <select id="plantaoSelect" class="sans" style="width:100%; background:var(--ink2); color:var(--txt); border:1px solid var(--border); border-radius:6px; padding:5px 7px; font-size:12.5px;">${plantaoOptions}</select>
+      </div>
+      <div class="info-item"><div class="il">Adicional Noturno</div><div class="iv" style="color:${f.elegivelNoturno?'#7FCB9C':'var(--muted)'}">${f.elegivelNoturno ? 'SIM' : 'NÃO'}</div></div>
+    </div>
+    <div class="bar-composition">${barHtml}</div>
+    ${f.reajuste > 1 ? `<div class="sans" style="color:#7FCB9C; font-size:12px; margin-bottom:10px;">Reajuste salarial de +${((f.reajuste-1)*100).toFixed(2)}% já incluído no salário-base (vigente na data de referência).</div>` : ''}
+    ${f.cargoEspecial ? `<div class="sans" style="background:rgba(212,162,76,0.1); border:1px solid var(--gold); border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12.5px; color:var(--txt);">
+      <b>Cargo especial: ${f.cargoEspecial}.</b> Anuênio, RETP e Risco calculados sobre a base original (${fmtBRLfull(f.baseOriginal)}). Nova base: ${fmtBRLfull(f.salarioBase)}.
+    </div>` : ''}
+    <table class="breakdown-table">
+      <tr><td>Salário-base (${classeLabel(rec.classe,f.nivel,f.cargoEspecial)})</td><td class="tabular">${fmtBRLfull(f.salarioBase)}</td></tr>
+      <tr><td>Anuênio — ${f.anuenioPct.toFixed(2)}% sobre ${f.cargoEspecial ? 'a base original' : 'o salário-base'}</td><td class="tabular">${fmtBRLfull(f.anuenioValor)}</td></tr>
+      <tr><td>RETP ${rec.possuiPorte ? '— '+state.retp+'% sobre (base'+(f.cargoEspecial?' original':'')+' + anuênio)' : '— não possui porte, sem direito a RETP'}</td><td class="tabular">${fmtBRLfull(f.retpValor)}</td></tr>
+      <tr><td>Risco de Vida — ${state.risco}% sobre ${f.cargoEspecial ? 'a base original' : 'o salário-base'}</td><td class="tabular">${fmtBRLfull(f.riscoValor)}</td></tr>
+      
+      <tr><td style="border-top:1px solid var(--border); padding-top:12px;">Subtotal (Base da Sexta Parte)</td><td class="tabular" style="border-top:1px solid var(--border); padding-top:12px;">${fmtBRLfull(f.brutoAntesSexta)}</td></tr>
+      <tr><td>Sexta Parte ${f.elegivelSexta ? '— subtotal ÷ 6 ('+f.tempo.toFixed(1)+' anos)' : '— não elegível ('+f.tempo.toFixed(1)+' anos)'}</td><td class="tabular">${fmtBRLfull(f.sextaValor)}</td></tr>
+      
+      <tr><td>Adicional Noturno ${f.elegivelNoturno ? '— (Base + Risco + RETP + 6ª) ÷ 200 ÷ 4 × '+(PLANTAO_INFO[f.plantaoKey].horasNoturnas * 13)+'h mensais' : '— não elegível'}</td><td class="tabular">${fmtBRLfull(f.adicionalNoturnoValor)}</td></tr>
+      
+      <tr class="total-row"><td>Salário Bruto Mensal</td><td class="tabular">${fmtBRLfull(f.brutoMensal)}</td></tr>
+      
+      <tr><td>Férias ${state.incluirFerias ? '— '+state.feriasPct+'% do bruto mensal, uma vez ao ano' : '(desativada)'}</td><td class="tabular">${fmtBRLfull(f.feriasValor)}</td></tr>
+      <tr><td>Custo anual ${state.decimo ? '(12 meses + 13º s/ noturno + Férias)' : '(12 meses + Férias)'}</td><td class="tabular" style="color:var(--gold); font-weight:700;">${fmtBRLfull(f.brutoAnual)}</td></tr>
+    </table>
+  `;
+
+  document.getElementById("closeProfileBtn").addEventListener("click", ()=>{ state.selected=null; renderProfile(null); });
+  
+  document.getElementById("plantaoSelect").addEventListener("change",(e)=>{
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nAlterar o plantão de ${rec.nome} para "${e.target.options[e.target.selectedIndex].text}"?`)){ renderProfile(rec); return; }
+    if(e.target.value){ PLANTAO_MAP[rec.nome] = e.target.value; } else { delete PLANTAO_MAP[rec.nome]; }
+    salvarPlantoes();
+    salvarDadosNaNuvem();
+    if (typeof salvarPlantaoOnline === "function") salvarPlantaoOnline(rec.nome, e.target.value || "");
+    renderAll();
+  });
+
+  document.getElementById("porteSelect").addEventListener("change", (e) => {
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nAlterar o porte de ${rec.nome} para ${e.target.value === "true" ? "SIM — Recebe RETP" : "NÃO — Sem RETP"}?`)){ renderProfile(rec); return; }
+    const temPorte = e.target.value === "true";
+    rec.possuiPorte = temPorte; 
+    salvarDadosNaNuvem();
+    if (typeof salvarPorteOnline === "function") salvarPorteOnline(rec.nome, temPorte ? "SIM" : "NÃO"); 
+    renderAll(); 
+  });
+} 
+
+function selectGCM(rec){
+  state.selected = rec;
+  const search=document.getElementById("searchInput");
+  if(search) search.value = rec.nome;
+  const dd=document.getElementById("searchDropdown");
+  if(dd) dd.style.display = "none";
+  renderProfile(rec);
+  renderProfileChart(rec);
+  showSection('homeSection');
+  const card = document.getElementById("profileCard");
+  if(card) card.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function normalize(s){ return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+
+const searchInput = document.getElementById("searchInput");
+const dropdown = document.getElementById("searchDropdown");
+let ddIndex = -1;
+
+searchInput.addEventListener("input", ()=>{
+  const q = normalize(searchInput.value.trim());
+  if(q.length<1){ dropdown.style.display="none"; return; }
+  const matches = ROSTER.filter(r=>normalize(r.nome).includes(q)).slice(0,8);
+  if(matches.length===0){ dropdown.innerHTML = `<div class="dd-item sans">Nenhum resultado.</div>`; dropdown.style.display="block"; return; }
+  ddIndex = -1;
+  dropdown.innerHTML = matches.map((r,i)=>`
+    <div class="dd-item sans" data-idx="${i}">
+      ${r.nome}
+      <div class="dd-sub">${classeLabel(r.classe, null)} · Matrícula ${r.mat || '—'}</div>
+    </div>`).join("");
+  dropdown.style.display = "block";
+  dropdown.querySelectorAll(".dd-item").forEach((item,i)=>{
+    item.addEventListener("click", ()=>{ selectGCM(matches[i]); });
+  });
+});
+searchInput.addEventListener("keydown",(e)=>{
+  const items = dropdown.querySelectorAll(".dd-item");
+  if(e.key==="ArrowDown"){ ddIndex=Math.min(ddIndex+1, items.length-1); updateHi(items); e.preventDefault(); }
+  else if(e.key==="ArrowUp"){ ddIndex=Math.max(ddIndex-1,0); updateHi(items); e.preventDefault(); }
+  else if(e.key==="Enter" && ddIndex>=0){ items[ddIndex].click(); }
+});
+function updateHi(items){ items.forEach(i=>i.classList.remove("hi")); if(items[ddIndex]) items[ddIndex].classList.add("hi"); }
+document.addEventListener("click",(e)=>{ if(!e.target.closest(".search-panel")) dropdown.style.display="none"; });
+
+function renderRosterTable(){
+  const el = document.getElementById("rosterTable");
+  const filterInput = document.getElementById("tableFilter");
+  const filterQ = filterInput ? normalize(filterInput.value.trim()) : "";
+  const cargoSelect = document.getElementById("cargoFilter");
+  
+  let rows = ROSTER.map(rec=>{
+    const f = computeFinance(rec);
+    let nivelExibicao = f.nivel;
+    if (state.modo2027 === 'niveis' && nivelExibicao === null && (rec.classe === 3 || rec.classe === 2)) {
+      nivelExibicao = levelForTempo(f.tempo);
+    }
+    const label = classeLabel(rec.classe, nivelExibicao, f.cargoEspecial);
+    return {rec, f, label};
+  });
+
+  if (cargoSelect) {
+    const labelCounts = {};
+    rows.forEach(r => {
+      labelCounts[r.label] = (labelCounts[r.label] || 0) + 1;
+    });
+
+    const getPesoHierarquia = (lbl) => {
+      const l = lbl.toLowerCase();
+      if (l.includes("comandante") && !l.includes("sub")) return 70;
+      if (l.includes("subcomandante")) return 60;
+      if (l.includes("inspetor") && !l.includes("sub")) return 50 + (l.includes("1ª") ? 0 : l.includes("2ª") ? 1 : 2);
+      if (l.includes("subinspetor")) return 40 + (l.includes("1ª") ? 0 : l.includes("2ª") ? 1 : 2);
+      if (l.includes("1ª classe")) return 30;
+      if (l.includes("2ª classe")) {
+        if (l.includes("nível 0")) return 20;
+        if (l.includes("nível 1")) return 21;
+        if (l.includes("nível 2")) return 22;
+        return 23; 
+      }
+      if (l.includes("3ª classe")) {
+        if (l.includes("nível 0")) return 10;
+        if (l.includes("nível 1")) return 11;
+        if (l.includes("nível 2")) return 12;
+        return 13; 
+      }
+      return 99; 
+    };
+
+    const uniqueLabels = Object.keys(labelCounts).sort((a, b) => getPesoHierarquia(a) - getPesoHierarquia(b));
+    const currentVal = cargoSelect.value;
+    
+    cargoSelect.innerHTML = `<option value="">GCM por Cargo / Nível (Todos)</option>` + 
+      uniqueLabels.map(l => `<option value="${l}" ${l === currentVal ? 'selected' : ''}>${l} (${labelCounts[l]} GCMs)</option>`).join("");
+
+    if(cargoSelect.value){
+      rows = rows.filter(({label}) => label === cargoSelect.value);
+    }
+  }
+
+  if(filterQ){
+    rows = rows.filter(({rec, label})=> normalize(rec.nome).includes(filterQ) || normalize(label).includes(filterQ));
+  }
+
+  rows.sort((a,b)=>{
+    let va,vb;
+    if(state.sortKey==='nome'){ va=a.rec.nome; vb=b.rec.nome; return state.sortDir*va.localeCompare(vb); }
+    if(state.sortKey==='classe'){ va=a.rec.classe; vb=b.rec.classe; return state.sortDir*(va-vb); }
+    if(state.sortKey==='turno'){ va=a.f.plantaoKey||''; vb=b.f.plantaoKey||''; return state.sortDir*va.localeCompare(vb); }
+    if(state.sortKey==='tempo'){ va=a.f.tempo; vb=b.f.tempo; return state.sortDir*(va-vb); }
+    if(state.sortKey==='bruto'){ va=a.f.brutoMensal; vb=b.f.brutoMensal; return state.sortDir*(va-vb); }
+    return 0;
+  });
+
+  const head = `<tr>
+    <th data-k="nome">Nome</th>
+    <th data-k="classe">Classe/Nível</th>
+    <th data-k="turno">Turno</th>
+    <th data-k="tempo" class="num">Tempo Serviço</th>
+    <th class="num">Salário-base</th>
+    <th class="num">Anuênio</th>
+    <th class="num">RETP</th>
+    <th class="num">Risco</th>
+    <th class="num">Noturno</th>
+    <th class="num">6ª Parte</th>
+    <th data-k="bruto" class="num">Bruto Mensal</th>
+  </tr>`;
+  
+  const body = rows.map(({rec,f,label})=>`
+    <tr data-name="${rec.nome.replace(/"/g,'&quot;')}">
+      <td>${rec.nome}</td>
+      <td>${label}</td>
+      <td>${f.plantaoKey ? `<span class="lvl-badge" style="background:${PLANTAO_INFO[f.plantaoKey].color}22; color:${PLANTAO_INFO[f.plantaoKey].color}; border:1px solid ${PLANTAO_INFO[f.plantaoKey].color}">${f.plantaoKey}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="num tabular">${f.tempo.toFixed(1)} anos</td>
+      <td class="num tabular">${fmtBRL0(f.salarioBase)}</td>
+      <td class="num tabular">${fmtBRL0(f.anuenioValor)}</td>
+      <td class="num tabular">${fmtBRL0(f.retpValor)}</td>
+      <td class="num tabular">${fmtBRL0(f.riscoValor)}</td>
+      <td class="num tabular" style="color:${f.elegivelNoturno?'#E0A85C':MUTED}">${fmtBRL0(f.adicionalNoturnoValor)}</td>
+      <td class="num tabular">${fmtBRL0(f.sextaValor)}</td>
+      <td class="num tabular" style="font-weight:700; color:var(--gold)">${fmtBRL0(f.brutoMensal)}</td>
+    </tr>`).join("");
+  
+  if (el) {
+    el.innerHTML = head + body;
+
+    el.querySelectorAll("th[data-k]").forEach(th=>{
+      th.addEventListener("click", ()=>{
+        const k = th.dataset.k;
+        if(state.sortKey===k) state.sortDir *= -1; else { state.sortKey=k; state.sortDir=1; }
+        renderRosterTable();
+      });
+    });
+    el.querySelectorAll("tbody tr, tr[data-name]").forEach(tr=>{
+      tr.addEventListener("click", ()=>{
+        const rec = ROSTER.find(r=>r.nome===tr.dataset.name);
+        if(rec) selectGCM(rec);
+      });
+    });
+  }
+}
+function confirmarAlteracao(mensagem, aplicar, desfazer){
+  if(confirm(`CONFIRMAR ALTERAÇÃO\n\n${mensagem}\n\nOK = confirmar | Cancelar = manter o valor anterior.`)){ aplicar(); } else if(desfazer){ desfazer(); }
+}
+
+const cargoFiltroInput = document.getElementById("cargoFilter");
+if (cargoFiltroInput) cargoFiltroInput.addEventListener("change", renderRosterTable);
+document.getElementById("tableFilter").addEventListener("input", renderRosterTable);
+document.getElementById("refDateInput").addEventListener("change",(e)=>{ const old=e.target.dataset.old||e.target.defaultValue||e.target.value; confirmarAlteracao(`Alterar a data de referência para ${e.target.value}?`,()=>{ e.target.dataset.old=e.target.value; renderAll(); },()=>{ e.target.value=old; }); });
+function bindConfirmNumber(id, key, label){ const el=document.getElementById(id); if(!el) return; el.dataset.old=el.value; el.addEventListener("change",(e)=>{ const old=el.dataset.old; const val=parseFloat(e.target.value)||0; confirmarAlteracao(`Alterar ${label} para ${val}?`,()=>{ state[key]=val; el.dataset.old=e.target.value; renderAll(); },()=>{ el.value=old; }); }); }
+bindConfirmNumber("retpInput","retp","RETP");
+bindConfirmNumber("riscoInput","risco","Risco de Vida");
+bindConfirmNumber("sextaAnosInput","sextaAnos","Sexta Parte a partir de");
+bindConfirmNumber("feriasInput","feriasPct","Férias");
+function bindConfirmCheck(id,key,label){ const el=document.getElementById(id); if(!el) return; el.addEventListener("change",(e)=>{ const novo=e.target.checked; confirmarAlteracao(`${label}: ${novo?'ativar':'desativar'}?`,()=>{ state[key]=novo; renderAll(); },()=>{ e.target.checked=!novo; }); }); }
+bindConfirmCheck("incluirSexta","incluirSexta","Incluir 6ª Parte");
+bindConfirmCheck("incluirFerias","incluirFerias","Incluir Férias no custo anual");
+bindConfirmCheck("decimoTerceiro","decimo","Incluir 13º no custo anual");
+document.getElementById("bigModeBtn").addEventListener("click", ()=>{
+  state.big=!state.big;
+  document.getElementById("bigModeBtn").classList.toggle("on", state.big);
+  document.getElementById("bigModeBtn").textContent = state.big ? "Modo padrão" : "Modo apresentação";
+  document.body.style.fontSize = state.big ? "16px" : "15px";
+});
+
+const CHART_YEARS = [2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036];
+const YEAR_COLORS = ["#4FB8AE","#5FA9C9","#6F9ADA","#8B7FC9","#A374C4","#B96BB8","#CE6BA8","#E0A85C","#D4A24C","#C97A4A","#B85A3E"];
+
+function custoUmaLevaNoAno(anoEntrada, year){
+  const tempo = year - anoEntrada; 
+  if(tempo < 0) return { mensal: 0, anual: 0 };
+  const refYear = new Date(year, 0, 15);
+  const rj = reajusteFactor(refYear);
+  const nivel = levelForTempo(tempo);
+  const baseSalario = [SALARY_TABLE[3].n0, SALARY_TABLE[3].n1, SALARY_TABLE[3].n2][nivel] * rj;
+  const anosCompletos = Math.floor(tempo);
+  const anuenioPct = atsPercent(anosCompletos);
+  const anuenioValor = baseSalario * anuenioPct/100;
+  const retpValor = (baseSalario + anuenioValor) * state.retp/100; 
+  const riscoValor = baseSalario * state.risco/100;
+  const brutoAntesSexta = baseSalario + anuenioValor + retpValor + riscoValor;
+  const elegivelSexta = tempo >= state.sextaAnos;
+  const sextaValor = (state.incluirSexta && elegivelSexta) ? brutoAntesSexta/6 : 0;
+  const brutoMensal = brutoAntesSexta + sextaValor;
+  const mult = state.decimo ? 13 : 12;
+  const feriasValor = state.incluirFerias ? brutoMensal * state.feriasPct/100 : 0;
+  const brutoAnual = (brutoMensal * mult) + feriasValor;
+  return { mensal: brutoMensal, anual: brutoAnual };
+}
+
+function novosGcmsTotal(year){
+  let mensal = 0, anual = 0;
+  NOVOS_ANOS.forEach(anoEntrada=>{
+    if(anoEntrada > year) return; 
+    const qtd = state.novosGcmsPorAno[anoEntrada] || 0;
+    if(qtd <= 0) return;
+    const c = custoUmaLevaNoAno(anoEntrada, year);
+    mensal += c.mensal * qtd;
+    anual += c.anual * qtd;
+  });
+  return { mensal, anual };
+}
+
+function totalFolhaForYear(year, includeNovos=true){
+  const base = refDate();
+  const baseYear = base.getFullYear();
+  const shifted = new Date(base);
+  shifted.setFullYear(baseYear + (year - baseYear));
+  let mensal=0, anual=0;
+  ROSTER.forEach(rec=>{
+    const f = computeFinance(rec, shifted);
+    mensal += f.brutoMensal;
+    anual += f.brutoAnual;
+  });
+  if(includeNovos){
+    const novos = novosGcmsTotal(year);
+    mensal += novos.mensal;
+    anual += novos.anual;
+  }
+  return { mensal, anual };
+}
+
+
+function periodLabel(a,b){ return a + " × " + b; }
+
+function renderParameterSummary(){
+  const el=document.getElementById('parameterSummary');
+  if(!el) return;
+  el.innerHTML = [
+    ['RETP', state.retp + '%'],
+    ['Risco de Vida', state.risco + '%'],
+    ['6ª Parte', state.incluirSexta ? 'Ativa a partir de '+state.sextaAnos+' anos' : 'Desativada'],
+    ['Férias', state.incluirFerias ? state.feriasPct+'% do bruto mensal' : 'Desativadas'],
+    ['13º', state.decimo ? 'Incluído' : 'Desativado'],
+    ['Novos GCMs', state.compararNovosGcms ? 'Incluídos nas comparações' : 'Excluídos das comparações'],
+    ['Modelo 2027', state.modo2027==='comparar' ? 'Comparação sem níveis × com níveis' : (state.modo2027==='niveis' ? 'Níveis N0/N1/N2' : 'Valor-base sem níveis')],
+    ['Data referência', refDate().toLocaleDateString('pt-BR')]
+  ].map(([l,v])=>`<div class="selected-mini"><div class="lbl">${l}</div><div class="val">${v}</div></div>`).join('');
+}
+
+function totalFolhaForYearMode(year, mode, includeNovos=true){
+  const previousMode = state.modo2027;
+  state.modo2027 = mode;
+  try { return totalFolhaForYear(year, includeNovos); }
+  finally { state.modo2027 = previousMode; }
+}
+
+function renderModeloComparison(){
+  const panel=document.getElementById('modeloComparisonPanel');
+  const select=document.getElementById('modeloComparisonYear');
+  const selected=document.getElementById('modeloComparisonSelected');
+  const table=document.getElementById('modeloComparisonTable');
+  if(!panel || !select || !selected || !table) return;
+  const active=state.modo2027==='comparar';
+  panel.style.display=active?'block':'none';
+  if(!active) return;
+  const years=CHART_YEARS.filter(y=>y>=2027);
+  if(!years.includes(state.modeloComparisonYear)) state.modeloComparisonYear=2027;
+  select.innerHTML=years.map(y=>`<option value="${y}" ${y===state.modeloComparisonYear?'selected':''}>${y}</option>`).join('');
+  const data=years.map(year=>{
+    const semNiveis=totalFolhaForYearMode(year,'flat',true);
+    const comNiveis=totalFolhaForYearMode(year,'niveis',true);
+    return {year,semNiveis,comNiveis,diffMensal:comNiveis.mensal-semNiveis.mensal,diffAnual:comNiveis.anual-semNiveis.anual};
+  });
+  const current=data.find(d=>d.year===state.modeloComparisonYear)||data[0];
+  const cm=current.diffMensal>=0?'#E0A85C':'#7FCB9C', ca=current.diffAnual>=0?'#E0A85C':'#7FCB9C';
+  selected.innerHTML=[
+    ['Ano selecionado',current.year],
+    ['Sem níveis — folha mensal',fmtBRL0(current.semNiveis.mensal)],
+    ['Com níveis — folha mensal',fmtBRL0(current.comNiveis.mensal)],
+    ['Diferença mensal',`<span style="color:${cm}">${current.diffMensal>=0?'+':''}${fmtBRL0(current.diffMensal)}</span>`],
+    ['Diferença anual',`<span style="color:${ca}">${current.diffAnual>=0?'+':''}${fmtBRL0(current.diffAnual)}</span>`]
+  ].map(([l,v])=>`<div class="selected-mini"><div class="lbl">${l}</div><div class="val">${v}</div></div>`).join('');
+  table.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border:1px solid var(--border);"><thead><tr style="background:var(--ink2);"><th style="text-align:left;padding:9px 10px;color:var(--muted);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border);">Ano</th><th style="text-align:right;padding:9px 10px;color:var(--muted);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border);">Sem níveis — mensal</th><th style="text-align:right;padding:9px 10px;color:var(--muted);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border);">Com níveis — mensal</th><th style="text-align:right;padding:9px 10px;color:var(--gold);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border);">Diferença mensal</th><th style="text-align:right;padding:9px 10px;color:var(--gold);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border);">Diferença anual</th></tr></thead><tbody>${data.map(d=>{const c1=d.diffMensal>=0?'#E0A85C':'#7FCB9C',c2=d.diffAnual>=0?'#E0A85C':'#7FCB9C',act=d.year===current.year;return `<tr style="background:${act?'rgba(224,168,92,.08)':'transparent'};cursor:pointer;" data-model-year="${d.year}" title="Clique para selecionar ${d.year}"><td style="padding:8px 10px;border-bottom:1px solid rgba(37,64,92,.3);font-weight:700;color:${act?'var(--gold)':'var(--txt)'};">${d.year}</td><td class="tabular" style="text-align:right;padding:8px 10px;border-bottom:1px solid rgba(37,64,92,.3);">${fmtBRL0(d.semNiveis.mensal)}</td><td class="tabular" style="text-align:right;padding:8px 10px;border-bottom:1px solid rgba(37,64,92,.3);">${fmtBRL0(d.comNiveis.mensal)}</td><td class="tabular" style="text-align:right;padding:8px 10px;border-bottom:1px solid rgba(37,64,92,.3);color:${c1};font-weight:700;">${d.diffMensal>=0?'+':''}${fmtBRL0(d.diffMensal)}</td><td class="tabular" style="text-align:right;padding:8px 10px;border-bottom:1px solid rgba(37,64,92,.3);color:${c2};font-weight:700;">${d.diffAnual>=0?'+':''}${fmtBRL0(d.diffAnual)}</td></tr>`}).join('')}</tbody></table><div class="metric-note" style="margin-top:8px;">Diferença = <b>modelo com níveis − modelo sem níveis</b>. Os novos GCMs são considerados nos dois cenários; como a regra de ingresso é a mesma, eles não alteram a diferença entre os modelos.</div>`;
+  select.onchange=e=>{state.modeloComparisonYear=+e.target.value;renderModeloComparison();};
+  table.querySelectorAll('[data-model-year]').forEach(row=>row.addEventListener('click',()=>{state.modeloComparisonYear=+row.dataset.modelYear;renderModeloComparison();}));
+}
+
+function renderPeriodComparisons(){
+  const el=document.getElementById('periodCompareGrid');
+  if(!el) return;
+  const pairs=CHART_YEARS.slice(0,-1).map((y,i)=>[y,CHART_YEARS[i+1]]);
+  el.innerHTML=pairs.map(([a,b])=>{
+    const key=a+'-'+b;
+    const checked=state.periodPairs.has(key);
+    const includeNew=state.compararNovosGcms && state.periodIncludeNew.has(key);
+    const ca=totalFolhaForYear(a,includeNew);
+    const cb=totalFolhaForYear(b,includeNew);
+    const deltaM=cb.mensal-ca.mensal;
+    const deltaA=cb.anual-ca.anual;
+    const novosA=includeNew ? (NOVOS_ANOS.filter(x=>x<=a).reduce((sum,x)=>sum+(state.novosGcmsPorAno[x]||0),0)) : 0;
+    const novosB=includeNew ? (NOVOS_ANOS.filter(x=>x<=b).reduce((sum,x)=>sum+(state.novosGcmsPorAno[x]||0),0)) : 0;
+    return `<div class="period-card" style="opacity:${checked?1:.55};border-color:${checked?'var(--gold)':'var(--border)'};">
+      <label class="period-check"><input type="checkbox" data-pair="${key}" ${checked?'checked':''}> <b>${periodLabel(a,b)}</b></label>
+      <label class="period-check" style="font-size:11px;color:var(--muted);"><input type="checkbox" data-newpair="${key}" ${includeNew?'checked':''} ${state.compararNovosGcms?'':'disabled'}> Incluir novos GCMs</label>
+      <div class="period-values">
+        <div class="period-value"><div class="lbl">Folha mensal ${a}</div><div class="val">${fmtBRL0(ca.mensal)}</div></div>
+        <div class="period-value"><div class="lbl">Folha mensal ${b}</div><div class="val">${fmtBRL0(cb.mensal)}</div></div>
+      </div>
+      <div class="metric-note"><b>Impacto mensal:</b> <span style="color:${deltaM>=0?'#E0A85C':'#7FCB9C'}">${deltaM>=0?'+':''}${fmtBRL0(deltaM)}</span><br><b>Impacto anual:</b> <span style="color:${deltaA>=0?'#E0A85C':'#7FCB9C'}">${deltaA>=0?'+':''}${fmtBRL0(deltaA)}</span><br>Novos GCMs considerados: ${novosA} → ${novosB}</div>
+    </div>`;
+  }).join('');
+  el.querySelectorAll('input[data-pair]').forEach(cb=>cb.addEventListener('change',()=>{
+    if(cb.checked) state.periodPairs.add(cb.dataset.pair); else state.periodPairs.delete(cb.dataset.pair);
+    renderPeriodComparisons();
+  }));
+  el.querySelectorAll('input[data-newpair]').forEach(cb=>cb.addEventListener('change',()=>{
+    if(cb.checked) state.periodIncludeNew.add(cb.dataset.newpair); else state.periodIncludeNew.delete(cb.dataset.newpair);
+    renderPeriodComparisons();
+  }));
+}
+
+function renderRankings(){
+  const grid=document.getElementById('rankGrid'), area=document.getElementById('rankTableArea');
+  if(!grid || !area) return;
+  const counts={};
+  ROSTER.forEach(rec=>{
+    const f=computeFinance(rec);
+    const label=classeLabel(rec.classe,f.nivel,f.cargoEspecial);
+    counts[label]=(counts[label]||0)+1;
+  });
+  const ordered=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  grid.innerHTML=ordered.map(([label,n])=>`<div class="rank-card"><div class="n">${n}</div><div class="l">${label}</div></div>`).join('');
+  area.innerHTML=`<table class="roster"><thead><tr><th>Cargo / Classe / Nível</th><th class="num">Quantidade</th><th class="num">Participação</th></tr></thead><tbody>${ordered.map(([label,n])=>`<tr><td>${label}</td><td class="num">${n}</td><td class="num">${(n/ROSTER.length*100).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderPlantaoCards(){
+  const cards=document.getElementById('plantaoCards'), area=document.getElementById('plantaoRosterArea');
+  if(!cards || !area) return;
+  const counts={};
+  ROSTER.forEach(rec=>{ const p=PLANTAO_MAP[rec.nome] || 'Não definido'; counts[p]=(counts[p]||0)+1; });
+  cards.innerHTML=Object.entries(PLANTAO_INFO).map(([k,v])=>`<div class="plantao-card"><h3>${k}</h3><p>${v.label}<br>${v.noturno ? 'Adicional noturno: '+v.horasNoturnas+'h por plantão de referência.' : 'Sem adicional noturno.'}<br><b>${counts[k]||0} GCM(s)</b></p></div>`).join('') + `<div class="plantao-card"><h3>Não definido</h3><p>GCMs ainda sem plantão cadastrado.<br><b>${counts['Não definido']||0} GCM(s)</b></p></div>`;
+  const rows=ROSTER.slice().sort((a,b)=>(PLANTAO_MAP[a.nome]||'').localeCompare(PLANTAO_MAP[b.nome]||'') || a.nome.localeCompare(b.nome));
+  area.innerHTML=`<div class="table-wrap" style="max-height:500px;"><table class="roster"><thead><tr><th>GCM</th><th>Plantão</th><th>Regime</th><th class="num">Horas noturnas</th></tr></thead><tbody>${rows.map(rec=>{const p=PLANTAO_MAP[rec.nome]||'';const pi=p?PLANTAO_INFO[p]:null;return `<tr><td>${rec.nome}</td><td>${p||'<span style="color:var(--muted)">Não definido</span>'}</td><td>${pi?pi.label:'—'}</td><td class="num">${pi?pi.horasNoturnas:0}</td></tr>`}).join('')}</tbody></table></div>`;
+}
+
+function renderSidebarGcmList(){
+  const el=document.getElementById('sideGcmList'), input=document.getElementById('sideGcmSearch');
+  if(!el) return;
+  const q=normalize(input ? input.value.trim() : '');
+  const rows=ROSTER.filter(r=>!q || normalize(r.nome).includes(q));
+  el.innerHTML=rows.map(r=>`<button class="side-gcm" data-side-name="${r.nome.replace(/"/g,'&quot;')}">${r.nome}<span style="display:block;color:var(--muted);font-size:10px;margin-top:2px;">${classeLabel(r.classe,null)} · ${r.mat||'—'}</span></button>`).join('') || '<div style="color:var(--muted);font-size:11px;padding:8px;">Nenhum GCM encontrado.</div>';
+  el.querySelectorAll('[data-side-name]').forEach(btn=>btn.addEventListener('click',()=>{
+    const rec=ROSTER.find(r=>r.nome===btn.dataset.sideName);
+    if(rec) selectGCM(rec);
+  }));
+}
+
+function renderProfileChart(rec){
+  const container=document.getElementById('profileChartArea');
+  if(!container || !rec){ if(container) container.innerHTML=''; return; }
+  const years=CHART_YEARS;
+  const vals=years.map(y=>{const base=refDate(), shifted=new Date(base); shifted.setFullYear(base.getFullYear()+(y-base.getFullYear())); return {year:y,monthly:computeFinance(rec,shifted).brutoMensal};});
+  const W=900,H=330,pL=70,pR=25,pT=25,pB=55,plotW=W-pL-pR,plotH=H-pT-pB;
+  const max=Math.max(...vals.map(v=>v.monthly))*1.15;
+  const gap=plotW/Math.max(1,vals.length-1);
+  let svg='';
+  for(let i=0;i<=4;i++){const y=pT+plotH-(plotH/4)*i,val=max*i/4;svg+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="${BORDER}" stroke-dasharray="3 5"/><text x="${pL-8}" y="${y+4}" text-anchor="end" fill="${MUTED}" font-size="10">${fmtBRL0(val)}</text>`;}
+  const points=vals.map((v,i)=>`${pL+gap*i},${pT+plotH-(v.monthly/max)*plotH}`).join(' ');
+  svg+=`<polyline points="${points}" fill="none" stroke="#D4A24C" stroke-width="3"/>`;
+  vals.forEach((v,i)=>{const x=pL+gap*i,y=pT+plotH-(v.monthly/max)*plotH;svg+=`<circle cx="${x}" cy="${y}" r="4" fill="#D4A24C"/><text x="${x}" y="${H-27}" text-anchor="middle" fill="${TXT}" font-size="11">${v.year}</text><text x="${x}" y="${y-9}" text-anchor="middle" fill="${TXT}" font-size="9">${fmtBRL0(v.monthly)}</text>`;});
+  container.innerHTML=`<div class="profile-chart-wrap"><h3 style="margin:0 0 4px;color:var(--gold);font-size:14px;">Evolução do bruto mensal — ${rec.nome}</h3><p style="margin:0 0 10px;color:var(--muted);font-size:11px;">Projeção individual de 2026 a 2036, usando os parâmetros atuais.</p><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="max-width:100%;display:block;">${svg}</svg></div>`;
+}
+
+function renderYearChecks(){
+  const el = document.getElementById("yearChecks");
+  el.innerHTML = CHART_YEARS.map(y=>`
+    <label style="display:flex; align-items:center; gap:6px; background:var(--ink2); border:1px solid ${state.chartYears.has(y)?'var(--gold)':'var(--border)'}; border-radius:8px; padding:7px 12px; cursor:pointer; font-size:13px;">
+      <input type="checkbox" data-year="${y}" ${state.chartYears.has(y)?'checked':''} style="accent-color:var(--gold);">
+      ${y}
+    </label>`).join("");
+  el.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const y = +cb.dataset.year;
+      if(cb.checked) state.chartYears.add(y); else state.chartYears.delete(y);
+      if(state.chartYears.size===0){ state.chartYears.add(y); cb.checked=true; }
+      renderYearChecks();
+      renderYearChart();
+    });
+  });
+}
+
+function renderYearChart(){
+  const container = document.getElementById("yearChartArea");
+  if(!container) return;
+  const years = CHART_YEARS.filter(y=>state.chartYears.has(y));
+  
+  const data = years.map(y=>{
+    const base = refDate();
+    const baseYear = base.getFullYear();
+    const shifted = new Date(base);
+    shifted.setFullYear(baseYear + (y - baseYear));
+    
+    let atualAnual = 0;
+    ROSTER.forEach(rec=>{
+      const f = computeFinance(rec, shifted);
+      atualAnual += f.brutoAnual;
+    });
+    
+    const novos = state.compararNovosGcms ? novosGcmsTotal(y) : {mensal:0, anual:0};
+    const novosAnual = novos.anual;
+    const totalAnual = atualAnual + novosAnual;
+    
+    return { year: y, atual: atualAnual, novos: novosAnual, total: totalAnual };
+  });
+
+  const fs = state.big ? 1.2 : 1;
+  const W = Math.max(700, years.length*120+180), H = 450, padL=100, padR=40, padT=30, padB=60;
+  const plotW = W-padL-padR, plotH = H-padT-padB;
+  const maxVal = Math.max(...data.map(d=>d.total)) * 1.18;
+  const gap = plotW/years.length;
+  const barW = Math.min(gap*0.55, 75);
+
+  let gridLines = "";
+  for(let i=0;i<=4;i++){
+    const gy = padT+plotH-(plotH/4)*i;
+    const val = maxVal/4*i;
+    gridLines += `<line x1="${padL}" y1="${gy}" x2="${padL+plotW}" y2="${gy}" stroke="${BORDER}" stroke-dasharray="3 5"/>` +
+      `<text x="${padL-10}" y="${gy+4}" text-anchor="end" fill="${MUTED}" font-size="${10*fs}">${(val/1e6).toFixed(1)}mi</text>`;
+  }
+
+  let bars = "";
+  data.forEach((d,i)=>{
+    const xCenter = padL+gap*i+gap/2;
+    const hTotal = (d.total/maxVal)*plotH;
+    const yTopTotal = padT+plotH-hTotal;
+    
+    const hAtual = (d.atual/maxVal)*plotH;
+    const hNovos = (d.novos/maxVal)*plotH;
+    const yTopAtual = padT+plotH-hAtual;
+    const yTopNovos = yTopAtual - hNovos;
+
+    const colorAtual = YEAR_COLORS[CHART_YEARS.indexOf(d.year) % YEAR_COLORS.length];
+    const colorNovos = "#E0A85C"; 
+
+    let barraEmpilhada = "";
+    if (d.novos > 0) {
+      barraEmpilhada += `<rect x="${xCenter-barW/2}" y="${yTopAtual}" width="${barW}" height="${hAtual}" fill="${colorAtual}"></rect>`;
+      barraEmpilhada += `<rect x="${xCenter-barW/2}" y="${yTopNovos}" width="${barW}" height="${hNovos}" rx="3" fill="${colorNovos}"></rect>`;
+    } else {
+      barraEmpilhada += `<rect x="${xCenter-barW/2}" y="${yTopAtual}" width="${barW}" height="${hAtual}" rx="5" fill="${colorAtual}"></rect>`;
+    }
+
+    bars += barraEmpilhada +
+      `<text x="${xCenter}" y="${padT+plotH+26}" text-anchor="middle" fill="${TXT}" font-size="${13*fs}" font-weight="700">${d.year}</text>` +
+      `<text x="${xCenter}" y="${yTopTotal-10}" text-anchor="middle" fill="${TXT}" font-size="${11*fs}" font-weight="700" class="tabular">${fmtBRL0(d.total)}</text>`;
+  });
+
+  const legendaGrafico = `<div style="display:flex; gap:16px; justify-content:center; margin-bottom:12px; font-size:12px;" class="sans">` +
+    `<div style="display:flex; align-items:center; gap:6px;">` +
+      `<span style="width:12px; height:12px; background:#4FB8AE; display:inline-block; border-radius:3px;"></span>` +
+      `<span style="color:var(--txt);">Quadro Atual de Servidores</span>` +
+    `</div>` +
+    `<div style="display:flex; align-items:center; gap:6px;">` +
+      `<span style="width:12px; height:12px; background:#E0A85C; display:inline-block; border-radius:3px;"></span>` +
+      `<span style="color:var(--txt);">Impacto de Novos GCMs Contratados</span>` +
+    `</div>` +
+  `</div>`;
+
+  container.innerHTML = legendaGrafico + `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">` +
+    gridLines + `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="${BORDER}"/>` + bars +
+  `</svg>`;
+
+  if(data.length>=2){
+    const first = data[0], last = data[data.length-1];
+    const delta = last.total - first.total;
+    const pct = (delta/first.total*100).toFixed(1);
+    const kpiHtml = `<div class="kpis sans" style="margin-top:16px; margin-bottom:0;">` +
+      `<div class="kpi"><div class="lbl">Folha anual — ${first.year}</div><div class="val tabular">${fmtBRL0(first.total)}</div></div>` +
+      `<div class="kpi"><div class="lbl">Folha anual — ${last.year}</div><div class="val tabular">${fmtBRL0(last.total)}</div></div>` +
+      `<div class="kpi"><div class="lbl">Variação no período</div><div class="val tabular" style="color:${delta>=0?'#E0A85C':'#7FCB9C'}">${delta>=0?'+':''}${fmtBRL0(delta)}</div><div class="sub">${pct}% entre ${first.year} e ${last.year}</div></div>` +
+      `<div class="kpi"><div class="lbl">Anos selecionados</div><div class="val tabular" style="color:${GOLD}">${data.length}</div><div class="sub">${years.join(", ")}</div></div>` +
+    `</div>`;
+    container.innerHTML += kpiHtml;
+  }
+}
+
+function renderLegend(){
+  const el = document.getElementById("legendGrid");
+  const rjHoje = reajusteFactor(refDate());
+  const F0 = 1.0;
+  const F1 = 1.025;
+  const F2 = 1.025 * 1.02;
+
+  const rows = [
+    ["3ª Classe — Nível 0 (0–3 anos)", SALARY_TABLE[3].n0],
+    ["3ª Classe — Nível 1 (3–6 anos)", SALARY_TABLE[3].n1],
+    ["3ª Classe — Nível 2 (6+ anos)", SALARY_TABLE[3].n2],
+    ["2ª Classe — Nível 0 (0–3 anos)", SALARY_TABLE[2].n0],
+    ["2ª Classe — Nível 1 (3–6 anos)", SALARY_TABLE[2].n1],
+    ["2ª Classe — Nível 2 (6+ anos)", SALARY_TABLE[2].n2],
+    ["1ª Classe", SALARY_TABLE[1].flat],
+    ["Subinspetor", 5513.83],
+    ["Inspetor", 6637.20],
+    ["Subcomandante", 8088.08],
+    ["Comandante", 9710.67],
+  ];
+
+  const colStyle = (f) => f === rjHoje ? `color:${GOLD}; font-weight:700;` : `color:${TXT};`;
+
+  el.innerHTML = `
+    <div class="sans" style="grid-column:1/-1; overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+        <tr>
+          <th style="text-align:left; padding:7px 10px; color:${MUTED}; border-bottom:1px solid ${BORDER}; font-size:10.5px; text-transform:uppercase;">Classe / Nível / Cargo</th>
+          <th style="text-align:right; padding:7px 10px; color:${MUTED}; border-bottom:1px solid ${BORDER}; font-size:10.5px; text-transform:uppercase;">Valor-base (2026)</th>
+          <th style="text-align:right; padding:7px 10px; color:${MUTED}; border-bottom:1px solid ${BORDER}; font-size:10.5px; text-transform:uppercase;">A partir de Jan/2027 (+2,5%)</th>
+          <th style="text-align:right; padding:7px 10px; color:${MUTED}; border-bottom:1px solid ${BORDER}; font-size:10.5px; text-transform:uppercase;">A partir de Mar/2028 (+2% adic.)</th>
+        </tr>
+        ${rows.map(([label, base]) => `
+          <tr>
+            <td style="padding:6px 10px; color:${TXT}; border-bottom:1px solid rgba(37,64,92,0.3);">${label}</td>
+            <td class="tabular" style="text-align:right; padding:6px 10px; border-bottom:1px solid rgba(37,64,92,0.3); ${colStyle(F0)}">${fmtBRLfull(base*F0)}</td>
+            <td class="tabular" style="text-align:right; padding:6px 10px; border-bottom:1px solid rgba(37,64,92,0.3); ${colStyle(F1)}">${fmtBRLfull(base*F1)}</td>
+            <td class="tabular" style="text-align:right; padding:6px 10px; border-bottom:1px solid rgba(37,64,92,0.3); ${colStyle(F2)}">${fmtBRLfull(base*F2)}</td>
+          </tr>`).join("")}
+      </table>
+      <div style="margin-top:8px; font-size:11px; color:var(--muted);">
+        A coluna em dourado indica o valor vigente na data de referência atual (${refDate().toLocaleDateString("pt-BR")}). Reajustes compostos: Mar/2028 = valor-base × 2,5% (Janeiro 2027) × 2% (Março 2028).
+      </div>
+    </div>
+  `;
+}
+const SUPABASE_URL = 'https://equpcuinumkloguwypmt.supabase.co/rest/v1/'; // Cole sua URL aqui
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxdXBjdWludW1rbG9ndXd5cG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzI4MDgsImV4cCI6MjEwMzI0ODgwOH0.0-Fe9r0dn-SMUUHxjg9ytRXFSp_-Oxw4yc9PtwJ4tko'; // Cole sua chave aqui
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SYNC_CONFIG = {
+    url: "https://script.google.com/macros/s/AKfycbzFTHb9_sSXxgWQai3L8yq4i7qaqHp8cWyF1rvVAtAIwBV3UDmQxFn2IFW9ZQkYp09Qnw/exec",
+    key: "impactofinanceirogcm@"
+};
+
+function mapSheetRowToRecord(row){
+  const get = (...keys) => { for(const k of keys){ if(row[k]!==undefined && row[k]!==null && row[k]!=="") return row[k]; } return null; };
+  
+  const nome = get("NOME","Nome","nome");
+  const cargoRaw = String(get("CARGO","Cargo","cargo") || "").trim();
+  const admissaoRaw = get("ADMISSÃO","ADMISSAO","Admissão","admissao");
+  
+  // Captura flexível para qualquer variação da coluna de nascimento
+  const nascRaw = get("DATA NASC.","DATA NASC","Data Nasc.","nascimento","Nascimento","DATA DE NASCIMENTO","Data de Nascimento");
+  
+  const email = get("EMAIL","Email","email");
+  const mat = get("MAT","Matrícula","matricula");
+  const porteRaw = String(get("POSSUI PORTE","Possui Porte","possuiPorte") || "").trim().toUpperCase();
+
+  if(!nome) return { skip:true };
+  
+  const cargoLimpo = cargoRaw.toLowerCase();
+  let classe = null;
+
+  if (cargoLimpo.includes("3")) {
+    classe = 3;
+  } else if (cargoLimpo.includes("2")) {
+    classe = 2;
+  } else if (cargoLimpo.includes("1")) {
+    classe = 1;
+  } 
+  else if (cargoLimpo.includes("subinspetor") || cargoLimpo.includes("inspetor") || cargoLimpo.includes("subcomandante") || cargoLimpo.includes("comandante")) {
+    classe = 1;
+  }
+
+  if (classe === null) {
+    return { skip: true, motivo: "Cargo não elegível: " + cargoRaw };
+  }
+
+  const admDate = admissaoRaw ? parseDateBR(String(admissaoRaw)) : null;
+  if(!admDate) return { skip:true, motivo:"Sem data de admissão válida" };
+
+  // PROCESSAMENTO BLINDADO DA DATA DE NASCIMENTO
+  let nascDateFormatted = null;
+  if (nascRaw !== null && nascRaw !== undefined && nascRaw !== "") {
+    // Se for um número serial do Excel/Google Sheets (ex: 34410)
+    if (typeof nascRaw === 'number') {
+      const d = new Date((nascRaw - (25567 + 2)) * 86400 * 1000);
+      nascDateFormatted = dateToBR(d);
+    } else {
+      // Passa pela função parseDateBR robusta que criamos para aceitar M/D/AAAA ou D/M/AAAA
+      const parsedNasc = parseDateBR(String(nascRaw));
+      if (parsedNasc && !isNaN(parsedNasc.getTime())) {
+        nascDateFormatted = dateToBR(parsedNasc);
+      }
+    }
+  }
+
+  return {
+    skip:false,
+    record: {
+      nome: String(nome).trim(),
+      mat: mat ? String(mat).replace(/\.0$/,"") : "",
+      classe,
+      admissao: dateToBR(admDate),
+      nascimento: nascDateFormatted, // Agora a data de nascimento vai limpa e formatada
+      email: email ? String(email).trim() : null,
+      possuiPorte: porteRaw === "SIM",
+    }
+  };
+}
+
+async function salvarPlantaoOnline(nome, plantao){
+  const url = SYNC_CONFIG.url;
+  const key = SYNC_CONFIG.key;
+  if(!url) return; 
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+      body: JSON.stringify({ key, acao: "salvarPlantao", nome, plantao })
+    });
+  } catch(err){ }
+}
+
+async function carregarPlantoesOnline(){
+  const url = SYNC_CONFIG.url;
+  const key = SYNC_CONFIG.key;
+  if(!url) return;
+  try {
+    const resp = await fetch(url + (url.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(key) + "&acao=plantoes");
+    if(!resp.ok) return;
+    const dados = await resp.json();
+    if(dados.error || !Array.isArray(dados)) return;
+    dados.forEach(row=>{
+      if(row.nome && row.plantao && PLANTAO_INFO[row.plantao]){
+        PLANTAO_MAP[row.nome] = row.plantao;
+      }
+    });
+    salvarPlantoes();
+    const stampEl = document.getElementById("plantaoAutoStamp");
+    if(stampEl) stampEl.textContent = "Plantões atualizados às " + new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit'});
+  } catch(err){ }
+}
+
+async function sincronizarOnline(){
+  const url = SYNC_CONFIG.url;
+  const key = SYNC_CONFIG.key;
+  const dot = document.getElementById("syncDot");
+  const btn = document.getElementById("syncBtn");
+
+  if(!url){
+    dot.style.background = "#E0A85C";
+    dot.title = "URL não configurada";
+    return;
+  }
+  dot.style.background = "#E0A85C";
+  dot.title = "Sincronizando...";
+  btn.disabled = true;
+  btn.textContent = "Sincronizando...";
+
+  try {
+    const resp = await fetch(url + (url.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(key));
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const rows = await resp.json();
+    if(rows.error) throw new Error(rows.error);
+    if(!Array.isArray(rows)) throw new Error("resposta inesperada (esperava uma lista de linhas)");
+
+    const novos = [];
+    const excluidos = [];
+    rows.forEach(row=>{
+      const r = mapSheetRowToRecord(row);
+      if(r.skip){ if(r.motivo) excluidos.push(r.motivo); }
+      else novos.push(r.record);
+    });
+
+    if(novos.length === 0) throw new Error("nenhum registro válido encontrado na planilha");
+
+    ROSTER = novos;
+    await carregarPlantoesOnline();
+    state.selected = null;
+    renderProfile(null);
+    renderAll();
+
+    const now = new Date();
+    dot.style.background = "#7FCB9C";
+    dot.title = `Sincronizado — ${novos.length} registros (${excluidos.length} excluídos) às ${now.toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit'})}`;
+  } catch(err){
+    dot.style.background = "#C97A4A";
+    dot.title = "Falha na sincronização: " + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sincronizar agora";
+  }
+}
+
+function totalFolha2026(){
+  const base = refDate();
+  const ref2026 = new Date(2026, base.getMonth(), base.getDate()); 
+  let totalMensal=0, totalAnual=0;
+  ROSTER.forEach(rec=>{
+    const f = computeFinance(rec, ref2026);
+    totalMensal += f.brutoMensal;
+    totalAnual += f.brutoAnual;
+  });
+  return { totalMensal, totalAnual };
+}
+
+function totalFolha2027(){
+  const ref2027 = new Date(2027, 0, 15); 
+  let totalMensal=0, totalAnual=0;
+  ROSTER.forEach(rec=>{
+    const f = computeFinance(rec, ref2027);
+    totalMensal += f.brutoMensal;
+    totalAnual += f.brutoAnual;
+  });
+  if(state.compararNovosGcms){
+    const novos = novosGcmsTotal(2027);
+    totalMensal += novos.mensal;
+    totalAnual += novos.anual;
+  }
+  return { totalMensal, totalAnual };
+}
+
+function renderAntesDepois(){
+  const el = document.getElementById("antesDepoisArea");
+  const { totalMensal: antesMensal, totalAnual: antesAnual } = totalFolha2026();
+  const { totalMensal: depoisMensal, totalAnual: depoisAnual } = totalFolha2027();
+
+  const deltaMensal = depoisMensal - antesMensal;
+  const deltaAnual = depoisAnual - antesAnual;
+  const pctMensal = (deltaMensal/antesMensal*100).toFixed(1);
+
+  el.innerHTML = `
+    <div class="kpi"><div class="lbl">Folha mensal — 2026 (sem níveis)</div><div class="val tabular">${fmtBRL0(antesMensal)}</div><div class="sub">${ROSTER.length} GCMs, valor-base único por classe</div></div>
+    <div class="kpi"><div class="lbl">Folha mensal — 2027 (${state.modo2027==='flat'?'novo valor-base':(state.modo2027==='comparar'?'comparação':'com níveis')}${state.compararNovosGcms ? (() => { const t = NOVOS_ANOS.reduce((s,y)=>y<=2027?s+(state.novosGcmsPorAno[y]||0):s,0); return t ? ' + '+t+' novos' : ''; })() : ' · sem novos'})</div><div class="val tabular">${fmtBRL0(depoisMensal)}</div><div class="sub">${state.modo2027==='flat'?'Só novo valor-base':(state.modo2027==='comparar'?'Comparação entre modelos':'Estrutura de níveis')} + reajuste de 2,5%</div></div>
+    <div class="kpi"><div class="lbl">Impacto líquido mensal</div><div class="val tabular" style="color:${deltaMensal>=0?'#E0A85C':'#7FCB9C'}">${deltaMensal>=0?'+':''}${fmtBRL0(deltaMensal)}</div><div class="sub">${pctMensal}% em relação a 2026</div></div>
+    <div class="kpi"><div class="lbl">Impacto líquido anual</div><div class="val tabular" style="color:${GOLD}">${deltaAnual>=0?'+':''}${fmtBRL0(deltaAnual)}</div><div class="sub">${state.decimo?'Com 13º':'Sem 13º'} em ambos os cenários</div></div>
+  `;
+}
+
+document.getElementById("syncBtn").addEventListener("click", sincronizarOnline);
+function renderNovosPorAno(){
+  const el = document.getElementById("novosPorAnoGrid");
+  el.innerHTML = NOVOS_ANOS.map(y=>`
+    <div class="gc-item">
+      <label>${y}</label>
+      <input type="number" data-ano="${y}" class="novoAnoInput" value="${state.novosGcmsPorAno[y]||0}" step="1" min="0" style="width:75px;">
+    </div>`).join("");
+  el.querySelectorAll(".novoAnoInput").forEach(inp=>{
+    inp.dataset.old=inp.value;
+    inp.addEventListener("change",(e)=>{
+      const ano=+e.target.dataset.ano, old=e.target.dataset.old, novo=parseInt(e.target.value)||0;
+      confirmarAlteracao(`Alterar a quantidade de novos GCMs para ${ano} para ${novo}?`,()=>{ state.novosGcmsPorAno[ano]=novo; e.target.dataset.old=String(novo); renderAll(); },()=>{ e.target.value=old; });
+    });
+  });
+}
+
+function renderNovosGcmsTable() {
+  const area = document.getElementById("novosGcmsTableArea");
+  if (!area) return; 
+  const turmas = NOVOS_ANOS.filter(y => state.novosGcmsPorAno[y] > 0);
+  if (turmas.length === 0) { area.style.display = "none"; return; }
+  area.style.display = "block";
+
+  let rows = turmas.map(ano => {
+    const qtd = state.novosGcmsPorAno[ano];
+    const custo = custoUmaLevaNoAno(ano, ano); 
+    const mensalTotal = custo.mensal * qtd;
+    const anualTotal = custo.anual * qtd;
+    return `
+      <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid rgba(37,64,92,0.3); color:var(--txt);">Turma de ${ano}</td>
+        <td class="tabular" style="padding:8px 12px; border-bottom:1px solid rgba(37,64,92,0.3); text-align:center; color:var(--gold); font-weight:700;">${qtd} GCMs</td>
+        <td class="tabular" style="padding:8px 12px; border-bottom:1px solid rgba(37,64,92,0.3); text-align:right;">${fmtBRL0(custo.mensal)}</td>
+        <td class="tabular" style="padding:8px 12px; border-bottom:1px solid rgba(37,64,92,0.3); text-align:right; color:var(--txt);">${fmtBRL0(mensalTotal)}</td>
+        <td class="tabular" style="padding:8px 12px; border-bottom:1px solid rgba(37,64,92,0.3); text-align:right; font-weight:700; color:var(--gold);">${fmtBRL0(anualTotal)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  area.innerHTML = `
+    <table style="width:100%; border-collapse:collapse; font-size:13px; background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+      <thead>
+        <tr style="background:var(--ink2);">
+          <th style="text-align:left; padding:10px 12px; color:var(--muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Ingresso</th>
+          <th style="text-align:center; padding:10px 12px; color:var(--muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Quantidade</th>
+          <th style="text-align:right; padding:10px 12px; color:var(--muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Custo Unitário (Mês)</th>
+          <th style="text-align:right; padding:10px 12px; color:var(--muted); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Custo Total (Mês)</th>
+          <th style="text-align:right; padding:10px 12px; color:var(--gold); font-size:11px; text-transform:uppercase; border-bottom:1px solid var(--border);">Impacto Total no Ano</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderModo2027(){
+  document.getElementById("modo2027Select").value = state.modo2027;
+  document.getElementById("modo2027Desc").innerHTML = state.modo2027 === 'flat'
+    ? "A partir de <b>2027</b>: 3ª Classe passa para <b>R$2.678,40</b> (equivalente ao Nível 1 de hoje) e 2ª Classe para <b>R$3.239,96</b> (equivalente ao Nível 0 de hoje), como valor único, sem N0/N1/N2."
+    : state.modo2027 === 'comparar'
+      ? "Modo de comparação: o painel abaixo calcula, de <b>2027 a 2036</b>, a diferença entre o modelo sem níveis e o modelo com níveis. Selecione um ano para destacar os valores."
+      : "A partir de <b>2027</b>: entra em vigor a estrutura de níveis (N0/N1/N2 por tempo de serviço).";
+}
+document.getElementById("modo2027Select").addEventListener("change",(e)=>{ const old=state.modo2027; const text=e.target.options[e.target.selectedIndex].text; confirmarAlteracao(`Alterar o modelo de 2027 para "${text}"?`,()=>{ state.modo2027=e.target.value; renderAll(); },()=>{ e.target.value=old; }); });
+const compararNovosEl=document.getElementById("compararNovosGcms");
+if(compararNovosEl) compararNovosEl.addEventListener("change",(e)=>{ const novo=e.target.checked; confirmarAlteracao(`${novo?'Ativar':'Desativar'} a comparação com novos GCMs?`,()=>{ state.compararNovosGcms=novo; renderAll(); },()=>{ e.target.checked=!novo; }); });
+
+// ===== MOTOR DE HORAS EXTRAS CORRIGIDO E INTEGRADO =====
+const HE_STORAGE_KEY = "gcm_taubate_horas_extras_v2";
+
+function heInitSelectors(){
+  const yearSel = document.getElementById('heFilterYear');
+  const monthSel = document.getElementById('heFilterMonth');
+  if(!yearSel || !monthSel) return;
+
+  if(yearSel.options.length === 0){
+    let yHtml = '';
+    for(let y=2026; y<=2036; y++){
+      yHtml += `<option value="${y}" ${y===new Date().getFullYear()?'selected':''}>${y}</option>`;
+    }
+    yearSel.innerHTML = yHtml;
+  }
+
+  if(monthSel.options.length === 0){
+    const meses = [
+      {v:'01', l:'Janeiro'}, {v:'02', l:'Fevereiro'}, {v:'03', l:'Março'},
+      {v:'04', l:'Abril'}, {v:'05', l:'Maio'}, {v:'06', l:'Junho'},
+      {v:'07', l:'Julho'}, {v:'08', l:'Agosto'}, {v:'09', l:'Setembro'},
+      {v:'10', l:'Outubro'}, {v:'11', l:'Novembro'}, {v:'12', l:'Dezembro'}
+    ];
+    const curM = String(new Date().getMonth()+1).padStart(2,'0');
+    monthSel.innerHTML = meses.map(m=>`<option value="${m.v}" ${m.v===curM?'selected':''}>${m.l}</option>`).join('');
+  }
+}
+
+function heCurrentMonthKey(){
+  const y = document.getElementById('heFilterYear')?.value || new Date().getFullYear();
+  const m = document.getElementById('heFilterMonth')?.value || String(new Date().getMonth()+1).padStart(2,'0');
+  return `${y}-${m}`;
+}
+
+function monthLabel(key){
+  const [y,m]=key.split("-").map(Number);
+  return new Date(y,m-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+}
+function daysInMonth(key){
+  const [y,m]=key.split("-").map(Number);
+  return new Date(y,m,0).getDate();
+}
+function isoForMonthDay(key,day){
+  return key+"-"+String(day).padStart(2,"0");
+}
+function normalizeHERecord(v){
+  return Object.assign({total:0,h50:0,h100:0,n50:0,n100:0}, v||{});
+}
+function carregarHorasExtras(){
+  try {
+    const raw=localStorage.getItem(HE_STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  } catch(e){}
+  return {};
+}
+function salvarHorasExtras(){
+  try { localStorage.setItem(HE_STORAGE_KEY, JSON.stringify(state.horasExtras)); } catch(e){}
+}
+state.horasExtras = carregarHorasExtras();
+
+function heData(nome, dayISO, create=true){
+  if(!state.horasExtras[nome]) state.horasExtras[nome]={};
+  if(!state.horasExtras[nome][dayISO] && create) state.horasExtras[nome][dayISO]={total:0,h50:0,h100:0,n50:0,n100:0};
+  return state.horasExtras[nome][dayISO] || {total:0,h50:0,h100:0,n50:0,n100:0};
+}
+function heOptions(max=24, selected=0){
+  let out='';
+  for(let i=0;i<=max;i++) out += `<option value="${i}" ${+selected===i?'selected':''}>${i}${i===1?' hora':' horas'}</option>`;
+  return out;
+}
+function heCalc(rec,data,refOverride){
+  const f=computeFinance(rec, refOverride);
+  const hora=f.brutoMensal/220;
+  const h50=Math.max(0,+data.h50||0), h100=Math.max(0,+data.h100||0), n50=Math.max(0,+data.n50||0), n100=Math.max(0,+data.n100||0);
+  const v50=(h50-n50)*hora*1.50 + n50*hora*1.75;
+  const v100=(h100-n100)*hora*2.00 + n100*hora*2.25;
+  return {f,hora,h50,h100,n50,n100,totalHoras:h50+h100,totalNoturnas:n50+n100,v50,v100,total:v50+v100};
+}
+function heValidate(data){
+  const total=+data.total||0, h50=+data.h50||0, h100=+data.h100||0, n50=+data.n50||0, n100=+data.n100||0;
+  if(total===0 && (h50||h100||n50||n100)) return 'Para lançar horas, a quantidade total deve ser maior que zero.';
+  if(h50+h100!==total) return `As horas de 50% (${h50}) + 100% (${h100}) devem totalizar ${total} hora(s).`;
+  if(n50>h50) return 'As horas noturnas de 50% não podem ser maiores que as horas de 50%.';
+  if(n100>h100) return 'As horas noturnas de 100% não podem ser maiores que as horas de 100%.';
+  return '';
+}
+
+function renderHorasExtras(){
+  heInitSelectors();
+  const select=document.getElementById('heGcmSelect'); 
+  const dayInput=document.getElementById('heDayDate');
+  if(!select || !dayInput) return;
+
+  const currentMonthKey = heCurrentMonthKey();
+  const maxD = daysInMonth(currentMonthKey);
+  
+  if(!dayInput.value || dayInput.value.slice(0,7)!==currentMonthKey){
+    dayInput.value = currentMonthKey + "-01";
+  }
+  dayInput.min = currentMonthKey + "-01";
+  dayInput.max = currentMonthKey + "-" + String(maxD).padStart(2,'0');
+
+  const sorted=ROSTER.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+  const curGcm = select.value || 'SESOP';
+  
+  let optionsHtml = `<option value="SESOP">🛡️ SESOP — Painel Consolidado de Horas Extras</option>`;
+  optionsHtml += sorted.map(r=>`<option value="${r.nome.replace(/"/g,'&quot;')}" ${r.nome===curGcm?'selected':''}>${r.nome} — ${classeLabel(r.classe,null)}</option>`).join('');
+  select.innerHTML = optionsHtml;
+  select.value = curGcm;
+
+  const nome=select.value;
+  const isSesop = (nome === 'SESOP');
+
+  const gridCards = document.querySelector('.he-grid');
+  const dailyTablePanel = document.getElementById('heDailyTable')?.closest('.panel');
+  
+  if(isSesop){
+    if(gridCards) gridCards.style.display = 'none';
+    if(dailyTablePanel) dailyTablePanel.style.display = 'none';
+
+    let gTotH=0, g50=0, g100=0, gNot=0, gCost=0;
+    let corporativoRows = [];
+
+    ROSTER.forEach(rec => {
+      let tH=0, t50=0, t100=0, tNot=0, tCusto=0;
+      const monthsData = state.horasExtras[rec.nome] || {};
+      Object.entries(monthsData).forEach(([dIso, val])=>{
+        if(dIso.slice(0,7) === currentMonthKey){
+          const dc = heCalc(rec, normalizeHERecord(val), new Date(dIso+"T00:00:00"));
+          tH += dc.totalHoras; t50 += dc.h50; t100 += dc.h100; tNot += dc.totalNoturnas; tCusto += dc.total;
+        }
+      });
+      if(tH > 0){
+        gTotH += tH; g50 += t50; g100 += t100; gNot += tNot; gCost += tCusto;
+        corporativoRows.push({nome: rec.nome, h: tH, h50: t50, h100: t100, not: tNot, custo: tCusto});
+      }
+    });
+
+    const info=document.getElementById('heGcmInfo');
+    if(info) info.innerHTML=`<b style="color:var(--gold)">PAINEL EXECUTIVO SESOP</b> · Visão consolidada de todo o efetivo para o mês de <b style="color:var(--txt)">${monthLabel(currentMonthKey)}</b>`;
+    
+    const mi=document.getElementById('heMonthInfo');
+    if(mi) mi.innerHTML=`Total de GCMs com HE no mês: <b>${corporativoRows.length} servidor(es)</b> · Custo total consolidado: <b style="color:var(--gold)">${fmtBRLfull(gCost)}</b>`;
+
+    const summary=document.getElementById('heSummary');
+    if(summary) summary.innerHTML=`
+      <div class="he-mini"><div class="lbl">Total Horas</div><div class="val tabular">${gTotH}h</div></div>
+      <div class="he-mini"><div class="lbl">Total 50%</div><div class="val tabular">${g50}h</div></div>
+      <div class="he-mini"><div class="lbl">Total 100%</div><div class="val tabular">${g100}h</div></div>
+      <div class="he-mini"><div class="lbl">Adic. Noturno</div><div class="val tabular">${gNot}h</div></div>
+      <div class="he-mini he-total"><div class="lbl">Custo Consolidado</div><div class="val tabular" style="color:var(--gold)">${fmtBRLfull(gCost)}</div></div>`;
+
+    const alertBox = document.getElementById('heLimitAlert');
+    if(alertBox) alertBox.style.display = 'none';
+
+    renderHorasExtrasTable(currentMonthKey);
+    return;
+  } else {
+    if(gridCards) gridCards.style.display = 'grid';
+    if(dailyTablePanel) dailyTablePanel.style.display = 'block';
+  }
+
+  const rec=ROSTER.find(r=>r.nome===nome);
+  if(!rec) return;
+
+  const dayISO = dayInput.value;
+  const data=normalizeHERecord(heData(nome,dayISO,false));
+  const refDateVal=new Date(dayISO+"T00:00:00");
+  const calc=heCalc(rec,data,refDateVal);
+
+  let mTotal=0, m50=0, m100=0, mNot=0, mCost=0;
+  for(let d=1; d<=maxD; d++){
+    const dIso = isoForMonthDay(currentMonthKey, d);
+    const dData = state.horasExtras[nome]?.[dIso];
+    if(dData){
+      const dc = heCalc(rec, normalizeHERecord(dData), new Date(dIso+"T00:00:00"));
+      mTotal += dc.totalHoras; m50 += dc.h50; m100 += dc.h100; mNot += dc.totalNoturnas; mCost += dc.total;
+    }
+  }
+
+  const alertBox = document.getElementById('heLimitAlert');
+  if(alertBox){
+    if(mTotal >= 40){
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = `⚠️ ATENÇÃO: O GCM ${rec.nome} ATINGIU / ULTRAPASSOU AS 40H (${mTotal}h registradas no mês — limite de 40h mensais)`;
+    } else {
+      alertBox.style.display = 'none';
+    }
+  }
+
+  const info=document.getElementById('heGcmInfo');
+  if(info) info.innerHTML=`<b style="color:var(--txt)">${rec.nome}</b> · Salário bruto mensal: <b style="color:var(--gold)">${fmtBRLfull(calc.f.brutoMensal)}</b> · Valor da Hora Normal (Bruto ÷ 220): <b style="color:var(--gold)">${fmtBRLfull(calc.hora)}</b>`;
+  
+  const mi=document.getElementById('heMonthInfo');
+  if(mi) mi.innerHTML=`Mês em consulta: <b>${monthLabel(currentMonthKey)}</b> · Total acumulado no mês: <b>${mTotal}h</b> · Custo total no mês: <b>${fmtBRLfull(mCost)}</b>`;
+
+  const sels={heTotalHours:'total',he50Hours:'h50',he100Hours:'h100',heNight50Hours:'n50',heNight100Hours:'n100'};
+  Object.entries(sels).forEach(([id,key])=>{const e=document.getElementById(id); if(e) e.innerHTML=heOptions(24,data[key]);});
+
+  const err=heValidate(data), errEl=document.getElementById('heError');
+  if(errEl){ errEl.textContent=err; errEl.style.display=err?'block':'none'; }
+
+  const dFmt = `${dayISO.slice(8,10)}/${dayISO.slice(5,7)}/${dayISO.slice(0,4)}`;
+  const formula=document.getElementById('heFormula');
+  if(formula) formula.innerHTML=`Dia ${dFmt}<br>Hora normal: ${fmtBRLfull(calc.hora)}<br>50% comum: ${data.h50-data.n50}h · 50% noturno: ${data.n50}h<br>100% comum: ${data.h100-data.n100}h · 100% noturno: ${data.n100}h<br><b>Custo do dia: ${fmtBRLfull(err?0:calc.total)}</b>`;
+
+  const summary=document.getElementById('heSummary');
+  if(summary) summary.innerHTML=`
+    <div class="he-mini"><div class="lbl">Horas do Mês</div><div class="val tabular">${mTotal}h</div></div>
+    <div class="he-mini"><div class="lbl">50%</div><div class="val tabular">${m50}h</div></div>
+    <div class="he-mini"><div class="lbl">100%</div><div class="val tabular">${m100}h</div></div>
+    <div class="he-mini"><div class="lbl">Noturnas</div><div class="val tabular">${mNot}h</div></div>
+    <div class="he-mini he-total"><div class="lbl">Custo Total do Mês</div><div class="val tabular" style="color:var(--gold)">${fmtBRLfull(mCost)}</div></div>`;
+
+  renderHorasExtrasDailyTable(nome, currentMonthKey);
+  renderHorasExtrasTable(currentMonthKey);
+}
+
+function renderHorasExtrasDailyTable(nome,key){
+  const area=document.getElementById('heDailyTable'); if(!area) return;
+  const rec=ROSTER.find(r=>r.nome===nome); if(!rec) return;
+  const n=daysInMonth(key), rows=[];
+  for(let d=1;d<=n;d++){
+    const iso=isoForMonthDay(key,d), data=normalizeHERecord(state.horasExtras[nome]?.[iso]), c=heCalc(rec,data,new Date(iso+"T00:00:00"));
+    const has=c.totalHoras>0 || c.totalNoturnas>0;
+    rows.push(`<tr class="he-day-row ${has?'has-he':''}">
+      <td>${String(d).padStart(2,'0')}/${key.slice(5,7)}/${key.slice(0,4)}</td>
+      <td>${c.totalHoras?c.totalHoras+'h':'<span class="he-zero">0h</span>'}</td>
+      <td>${c.h50}h</td><td>${c.h100}h</td><td>${c.totalNoturnas}h</td>
+      <td class="num tabular">${fmtBRLfull(c.hora)}</td>
+      <td class="num tabular" style="color:${has?'var(--gold)':'var(--muted)'}">${fmtBRLfull(c.total)}</td>
+    </tr>`);
+  }
+  area.innerHTML=`<table class="roster"><thead><tr><th>Data</th><th>Horas</th><th>50%</th><th>100%</th><th>Noturnas</th><th class="num">Hora normal</th><th class="num">Custo do dia</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+}
+
+function renderHorasExtrasTable(key){
+  const area=document.getElementById('heRosterTable'); if(!area) return;
+  const rows = ROSTER.slice().map(rec => {
+    const nome = rec.nome;
+    let tH=0, t50=0, t100=0, tNot=0, tCusto=0;
+    const monthsData = state.horasExtras[nome] || {};
+    Object.entries(monthsData).forEach(([dIso, val])=>{
+      if(dIso.slice(0,7) === key){
+        const dc = heCalc(rec, normalizeHERecord(val), new Date(dIso+"T00:00:00"));
+        tH += dc.totalHoras; t50 += dc.h50; t100 += dc.h100; tNot += dc.totalNoturnas; tCusto += dc.total;
+      }
+    });
+    return {rec, c:{totalHoras:tH, h50:t50, h100:t100, totalNoturnas:tNot, total:tCusto}};
+  }).filter(x=>x.c.totalHoras > 0);
+
+  if(!rows.length){ area.innerHTML=`<div class="metric-note">Nenhuma hora extra cadastrada em ${monthLabel(key)}.</div>`; return; }
+  const totalH=rows.reduce((a,x)=>a+x.c.totalHoras,0), totalC=rows.reduce((a,x)=>a+x.c.total,0);
+  area.innerHTML=`<table class="roster"><thead><tr><th>GCM</th><th>Horas</th><th>50%</th><th>100%</th><th>Noturnas</th><th class="num">Custo HE</th></tr></thead>
+  <tbody>${rows.map(x=>`<tr><td>${x.rec.nome}</td><td>${x.c.totalHoras}h</td><td>${x.c.h50}h</td><td>${x.c.h100}h</td><td>${x.c.totalNoturnas}h</td><td class="num tabular" style="color:var(--gold)">${fmtBRLfull(x.c.total)}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><th>TOTAL DO MÊS</th><th>${totalH}h</th><th>${rows.reduce((a,x)=>a+x.c.h50,0)}h</th><th>${rows.reduce((a,x)=>a+x.c.h100,0)}h</th><th>${rows.reduce((a,x)=>a+x.c.totalNoturnas,0)}h</th><th class="num" style="color:var(--gold)">${fmtBRLfull(totalC)}</th></tr></tfoot></table>`;
+}
+
+async function salvarHoraExtraOnline(nome, dataDia, dataObj, custoCalc){
+  const url = SYNC_CONFIG.url;
+  const key = SYNC_CONFIG.key;
+  if(!url) return;
+
+  let dataFormatada = dataDia;
+  if(dataDia && dataDia.includes('-')) {
+    const p = dataDia.split('-');
+    if(p.length === 3) dataFormatada = `${p[2]}/${p[1]}/${p[0]}`;
+  }
+
+  const payload = {
+    key: key,
+    acao: "salvarHoraExtra",
+    nome: nome,
+    dataDia: dataFormatada,
+    totalHoras: dataObj.total,
+    h50: dataObj.h50,
+    h100: dataObj.h100,
+    n50: dataObj.n50,
+    n100: dataObj.n100,
+    custo: custoCalc
+  };
+
+  const btn = document.getElementById('heSaveDayBtn');
+  if(btn) { btn.textContent = "Salvando..."; btn.disabled = true; }
+
+  try {
+    let iframe = document.getElementById('hidden_iframe');
+    if(!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'hidden_iframe';
+      iframe.name = 'hidden_iframe';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = 'hidden_iframe';
+
+    for (const [k, v] of Object.entries(payload)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = k;
+      input.value = v;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    if(btn) { 
+      btn.textContent = "✓ Salvo!"; 
+      setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
+    }
+  } catch(err){
+    console.error("Erro ao sincronizar hora extra online:", err);
+    if(btn) { 
+      btn.textContent = "Erro ao salvar"; 
+      setTimeout(() => { btn.textContent = "Registrar este dia"; btn.disabled = false; }, 2000);
+    }
+  }
+}
+
+// --- BIND DE HORAS EXTRAS E BOTÃO DE E-MAIL ---
+function bindHorasExtras(){
+  const sel=document.getElementById('heGcmSelect'); if(!sel || sel.dataset.bound) return; sel.dataset.bound='1';
+  
+  const trigger=()=>renderHorasExtras();
+  sel.addEventListener('change',trigger);
+  
+  document.getElementById('heFilterYear')?.addEventListener('change',()=>{
+    const m = document.getElementById('heFilterMonth').value;
+    const y = document.getElementById('heFilterYear').value;
+    const dayInput = document.getElementById('heDayDate');
+    if(dayInput) dayInput.value = `${y}-${m}-01`;
+    renderHorasExtras();
+  });
+  
+  document.getElementById('heFilterMonth')?.addEventListener('change',()=>{
+    const m = document.getElementById('heFilterMonth').value;
+    const y = document.getElementById('heFilterYear').value;
+    const dayInput = document.getElementById('heDayDate');
+    if(dayInput) dayInput.value = `${y}-${m}-01`;
+    renderHorasExtras();
+  });
+
+  // Botão para salvar o relatório consolidado na Nuvem (Apenas quem fez hora extra + Plantão)
+  document.getElementById('enviarEmailBtn')?.addEventListener('click', async () => {
+    const mes = document.getElementById('heFilterMonth').value;
+    const ano = document.getElementById('heFilterYear').value;
+    const mesAno = `${ano}-${mes}`;
+
+    const btn = document.getElementById('enviarEmailBtn');
+    if(!btn) return;
+    
+    btn.textContent = "Salvando relatório na nuvem...";
+    btn.disabled = true;
+
+    try {
+      let listaRegistros = [];
+      let custoGeralMes = 0;
+      let totalHorasMes = 0;
+
+      // Varre apenas os servidores que possuem lançamentos de hora extra no mês selecionado
+      ROSTER.forEach(rec => {
+        let tH=0, t50=0, t100=0, tNot=0, tCusto=0;
+        const monthsData = state.horasExtras[rec.nome] || {};
+        
+        Object.entries(monthsData).forEach(([dIso, val]) => {
+          if(dIso.slice(0,7) === mesAno){
+            const dc = heCalc(rec, normalizeHERecord(val), new Date(dIso+"T00:00:00"));
+            tH += dc.totalHoras; 
+            t50 += dc.h50; 
+            t100 += dc.h100; 
+            tNot += dc.totalNoturnas; 
+            tCusto += dc.total;
+          }
+        });
+
+        // Se o GCM fez horas extras, adiciona ao relatório com o seu respectivo plantão
+        if(tH > 0){
+          totalHorasMes += tH;
+          custoGeralMes += tCusto;
+          
+          const plantaoDoGcm = PLANTAO_MAP[rec.nome] || "Não definido";
+
+          listaRegistros.push({
+            nome: rec.nome,
+            matricula: rec.mat || "—",
+            plantao: plantaoDoGcm,
+            totalHoras: tH,
+            horas50: t50,
+            horas100: t100,
+            noturnas: tNot,
+            custoTotal: tCusto
+          });
+        }
+      });
+
+      // Cria a estrutura organizada na nuvem
+      if (!state.relatoriosMensais) state.relatoriosMensais = {};
+      state.relatoriosMensais[mesAno] = {
+        periodo: monthLabel(mesAno + "-01"),
+        totalServidoresComHE: listaRegistros.length,
+        totalGeralHoras: totalHorasMes,
+        custoTotalFolhaExtra: custoGeralMes,
+        geradoEm: new Date().toLocaleString("pt-BR"),
+        servidores: listaRegistros
+      };
+
+      await salvarDadosNaNuvem(); // Grava limpo e estruturado no JSONBin
+
+      btn.textContent = "✓ Relatório otimizado salvo na nuvem!";
+      setTimeout(() => { 
+        btn.textContent = "📧 Enviar Relatório do Mês por E-mail"; 
+        btn.disabled = false; 
+      }, 4000);
+
+    } catch(err) {
+      console.error("Erro ao salvar relatório:", err);
+      alert("Erro ao salvar: " + err.message);
+      btn.textContent = "📧 Enviar Relatório do Mês por E-mail";
+      btn.disabled = false;
+    }
+  });
+
+  const map={heTotalHours:'total',he50Hours:'h50',he100Hours:'h100',heNight50Hours:'n50',heNight100Hours:'n100'};
+  Object.entries(map).forEach(([id,key])=>{
+    const e=document.getElementById(id);
+    if(e && !e.dataset.bound){ e.dataset.bound='1'; e.addEventListener('change',()=>{ 
+      const d=heData(sel.value, document.getElementById('heDayDate').value, true); 
+      const old=d[key]||0, novo=+e.value||0;
+      confirmarAlteracao(`Alterar ${id} do dia ${document.getElementById('heDayDate').value} para ${novo}?`,()=>{ d[key]=novo; renderHorasExtras(); },()=>{ e.value=old; });
+    });}
+  });
+
+  document.getElementById('heSaveDayBtn')?.addEventListener('click',async()=>{
+    const nome = sel.value;
+    if(nome === 'SESOP') return;
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nSalvar o lançamento de Horas Extras do dia ${document.getElementById('heDayDate').value} para ${nome}?`)) return;
+    const diaIso = document.getElementById('heDayDate').value;
+    const data = heData(nome, diaIso, true); 
+    const err = heValidate(data);
+    const errEl = document.getElementById('heError');
+    
+    if(err){ 
+      if(errEl){ errEl.textContent = err; errEl.style.display = 'block'; } 
+      return; 
+    }
+    if(errEl) errEl.style.display = 'none';
+    
+    salvarHorasExtras(); 
+    salvarDadosNaNuvem(); 
+
+    const rec = ROSTER.find(r => r.nome === nome);
+    if(rec){
+      const calc = heCalc(rec, data, new Date(diaIso+"T00:00:00"));
+      salvarHoraExtraOnline(nome, diaIso, data, calc.total);
+    }
+
+    renderHorasExtras();
+  });
+
+  document.getElementById('heClearDayBtn')?.addEventListener('click',async()=>{
+    const nome=sel.value; if(nome==='SESOP') return;
+    const dayISO=document.getElementById('heDayDate').value;
+    if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nLimpar o registro de Horas Extras do dia ${dayISO} para ${nome}?`)) return;
+    if(state.horasExtras[nome]) {
+      delete state.horasExtras[nome][dayISO];
+      // Se não sobrou nenhum dia com hora extra para este GCM, remove o objeto dele por completo
+      if(Object.keys(state.horasExtras[nome]).length === 0) {
+        delete state.horasExtras[nome];
+      }
+    }
+    
+    salvarHorasExtras();
+    salvarDadosNaNuvem(); // Envia para a nuvem limpando o registro
+    renderHorasExtras();
+  });
+}
+
+
+// ---------------------------------------------------------------------------
+// CONTROLE GCM — FALTAS ABONADAS E ATESTADOS
+// ---------------------------------------------------------------------------
+const CTRL_ABONADAS_LIMITE = 6;
+const CTRL_STORAGE_KEY = 'gcm_taubate_controle_gcm_v1';
+
+function carregarControleGcmLocal(){
+  try {
+    const raw = localStorage.getItem(CTRL_STORAGE_KEY);
+    if(raw) state.controleGcm = JSON.parse(raw) || {};
+  } catch(e) {}
+  if(!state.controleGcm || typeof state.controleGcm !== 'object') state.controleGcm = {};
+}
+function salvarControleGcmLocal(){
+  try { localStorage.setItem(CTRL_STORAGE_KEY, JSON.stringify(state.controleGcm || {})); } catch(e) {}
+}
+function ctrlGcmData(nome, ano, criar=true){
+  if(!state.controleGcm) state.controleGcm = {};
+  if(!state.controleGcm[nome]) { if(!criar) return null; state.controleGcm[nome] = {}; }
+  if(!state.controleGcm[nome][ano]) {
+    if(!criar) return null;
+    state.controleGcm[nome][ano] = { abonadas: [], atestados: [] };
+  }
+  const d = state.controleGcm[nome][ano];
+  if(!Array.isArray(d.abonadas)) d.abonadas=[];
+  if(!Array.isArray(d.atestados)) d.atestados=[];
+  return d;
+}
+function ctrlDateBR(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function ctrlEscape(v){
+  return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+function ctrlAddDays(iso, n){
+  const d = new Date(iso+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function ctrlToast(msg, ok=true){
+  let el=document.getElementById('ctrlToast');
+  if(!el){ el=document.createElement('div'); el.id='ctrlToast'; document.body.appendChild(el); }
+  el.textContent=msg;
+  el.style.cssText=`position:fixed;right:22px;bottom:22px;z-index:9999;padding:12px 16px;border-radius:10px;border:1px solid ${ok?'#4FB8AE':'#E05C5C'};background:${ok?'#102B2A':'#321719'};color:#EAF0F6;font-size:13px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.35);`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.remove(),3500);
+}
+async function ctrlSave(){
+  salvarControleGcmLocal();
+  return await salvarDadosNaNuvem();
+}
+function ctrlCurrent(){
+  const nome=document.getElementById('ctrlGcmSelect')?.value;
+  const ano=+(document.getElementById('ctrlFilterYear')?.value || new Date().getFullYear());
+  return {nome, ano, data: nome ? ctrlGcmData(nome, ano, true) : null};
+}
+function renderControleGcm(){
+  carregarControleGcmLocal();
+  const sel=document.getElementById('ctrlGcmSelect');
+  const year=document.getElementById('ctrlFilterYear');
+  if(!sel || !year) return;
+  const oldNome=sel.value;
+  const oldYear=year.value;
+  sel.innerHTML='<option value="">— Selecione um GCM —</option>'+ROSTER.slice().sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(r=>`<option value="${ctrlEscape(r.nome)}">${ctrlEscape(r.nome)} · Mat. ${ctrlEscape(r.mat||'—')}</option>`).join('');
+  if(ROSTER.some(r=>r.nome===oldNome)) sel.value=oldNome;
+  else if(ROSTER.length) sel.value=ROSTER[0].nome;
+  const anoAtual=new Date().getFullYear();
+  const anos=[]; for(let y=anoAtual-2;y<=anoAtual+5;y++) anos.push(y);
+  year.innerHTML=anos.map(y=>`<option value="${y}">${y}</option>`).join('');
+  year.value=anos.includes(+oldYear)?oldYear:String(anoAtual);
+  const dateDefault=document.getElementById('ctrlAbonadaDate');
+  const atDate=document.getElementById('ctrlAtestadoDate');
+  if(dateDefault && !dateDefault.value) dateDefault.value=`${year.value}-01-01`;
+  if(atDate && !atDate.value) atDate.value=`${year.value}-01-01`;
+  renderControleGcmView();
+  bindControleGcm();
+}
+function renderControleGcmView(){
+  const {nome,ano,data}=ctrlCurrent();
+  if(!nome || !data) return;
+  const rec=ROSTER.find(r=>r.nome===nome);
+  const abonadas=data.abonadas;
+  const atestados=data.atestados;
+  const utilizadas=abonadas.length;
+  const saldo=Math.max(0,CTRL_ABONADAS_LIMITE-utilizadas);
+  const diasAtestado=atestados.length;
+  const mes=document.getElementById('ctrlFilterMonth')?.value || 'all';
+  const filtradosAb=mes==='all'?abonadas:abonadas.filter(x=>x.data.slice(5,7)===mes);
+  const filtradosAt=mes==='all'?atestados:atestados.filter(x=>x.data.slice(5,7)===mes);
+  const info=document.getElementById('ctrlGcmInfo');
+  if(info) info.innerHTML=`<b>${ctrlEscape(nome)}</b> · Matrícula ${ctrlEscape(rec?.mat||'—')} · Ano ${ano}`;
+  const cards=document.getElementById('ctrlResumoCards');
+  if(cards) cards.innerHTML=`
+    <div class="he-card"><div class="metric-note">Abonadas utilizadas</div><div style="font-size:24px;font-weight:800;color:var(--gold)">${utilizadas}/6</div></div>
+    <div class="he-card"><div class="metric-note">Abonadas disponíveis</div><div style="font-size:24px;font-weight:800;color:${saldo?'var(--good)':'#FF8080'}">${saldo}</div></div>
+    <div class="he-card"><div class="metric-note">Dias de atestado</div><div style="font-size:24px;font-weight:800;color:var(--txt)">${diasAtestado}</div></div>
+    <div class="he-card"><div class="metric-note">Lançamentos no filtro</div><div style="font-size:24px;font-weight:800;color:var(--txt)">${filtradosAb.length+filtradosAt.length}</div></div>`;
+  const alert=document.getElementById('ctrlLimitAlert');
+  const btn=document.getElementById('ctrlSaveAbonadaBtn');
+  if(alert){ alert.style.display=utilizadas>=CTRL_ABONADAS_LIMITE?'block':'none'; }
+  if(btn){ btn.disabled=utilizadas>=CTRL_ABONADAS_LIMITE; btn.style.opacity=btn.disabled?.55:1; btn.style.cursor=btn.disabled?'not-allowed':'pointer'; }
+  const table=document.getElementById('ctrlHistoricoTable');
+  if(!table) return;
+  const rows=[];
+  filtradosAb.forEach((x,i)=>rows.push({data:x.data,tipo:'Falta Abonada',dias:1,obs:'—',kind:'ab',idx:abonadas.indexOf(x)}));
+  filtradosAt.forEach(x=>rows.push({data:x.data,tipo:'Atestado',dias:1,obs:x.obs||'—',kind:'at',idx:atestados.indexOf(x)}));
+  rows.sort((a,b)=>a.data.localeCompare(b.data));
+  if(!rows.length){ table.innerHTML='<div class="metric-note" style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px;">Nenhum lançamento encontrado para este GCM no período selecionado.</div>'; return; }
+  table.innerHTML=`<table class="breakdown-table" style="width:100%;"><thead><tr><th>Data</th><th>Tipo</th><th>Dias</th><th>Observação</th><th>Ação</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${ctrlDateBR(r.data)}</td><td>${r.tipo}</td><td>${r.dias}</td><td>${ctrlEscape(r.obs)}</td><td><button type="button" class="ctrlDeleteBtn" data-kind="${r.kind}" data-idx="${r.idx}" style="background:transparent;color:#FF8080;border:1px solid rgba(224,92,92,.45);border-radius:6px;padding:5px 8px;cursor:pointer;">Excluir</button></td></tr>`).join('')}</tbody></table>`;
+  table.querySelectorAll('.ctrlDeleteBtn').forEach(b=>b.addEventListener('click',()=>ctrlDelete(b.dataset.kind,+b.dataset.idx)));
+}
+function bindControleGcm(){
+  const ids=['ctrlGcmSelect','ctrlFilterYear','ctrlFilterMonth'];
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el && !el.dataset.bound){ el.dataset.bound='1'; el.addEventListener('change',()=>{ renderControleGcmView(); }); }});
+  const ab=document.getElementById('ctrlSaveAbonadaBtn');
+  if(ab && !ab.dataset.bound){ ab.dataset.bound='1'; ab.addEventListener('click',ctrlRegistrarAbonada); }
+  const at=document.getElementById('ctrlSaveAtestadoBtn');
+  if(at && !at.dataset.bound){ at.dataset.bound='1'; at.addEventListener('click',ctrlRegistrarAtestado); }
+  const cab=document.getElementById('ctrlClearAbonadaBtn');
+  if(cab && !cab.dataset.bound){ cab.dataset.bound='1'; cab.addEventListener('click',ctrlLimparAbonadas); }
+  const cat=document.getElementById('ctrlClearAtestadoBtn');
+  if(cat && !cat.dataset.bound){ cat.dataset.bound='1'; cat.addEventListener('click',ctrlLimparAtestados); }
+}
+async function ctrlRegistrarAbonada(){
+  const {nome,ano,data}=ctrlCurrent();
+  if(!nome || !data){ ctrlToast('Selecione um GCM antes de registrar.',false); return; }
+  const input=document.getElementById('ctrlAbonadaDate');
+  const iso=input?.value;
+  if(!iso){ ctrlToast('Informe o dia da Falta Abonada.',false); return; }
+  if(+iso.slice(0,4)!==ano){ ctrlToast(`A data deve pertencer ao ano de referência ${ano}.`,false); return; }
+  if(data.abonadas.length>=CTRL_ABONADAS_LIMITE){ renderControleGcmView(); ctrlToast('Lançamento bloqueado: o GCM já possui 6 Faltas Abonadas neste ano.',false); return; }
+  if(data.abonadas.some(x=>x===iso)){ ctrlToast('Já existe Falta Abonada registrada para esta data.',false); return; }
+
+  // 1. Salva localmente
+  data.abonadas.push(iso);
+  data.abonadas.sort();
+  salvarControleGcmLocal();
+
+  // 2. Salva no Supabase (Banco de Dados PostgreSQL)
+  if (typeof _supabase !== 'undefined') {
+    await _supabase.from('controle_gcm').insert([
+      { nome_gcm: nome, ano: ano, tipo: 'abonada', data_registro: iso, dias: 1 }
+    ]);
+
+    // 3. Registra quem fez a alteração na Auditoria
+    await registrarRastroAuditoria("Lançamento de Falta Abonada", `Servidor: ${nome} | Data: ${iso} | Ano: ${ano}`);
+  }
+
+  renderControleGcmView();
+  ctrlToast(`Falta Abonada de ${ctrlDateBR(iso)} registrada com sucesso!`, true);
+}
+
+async function ctrlRegistrarAtestado(){
+  const {nome,ano,data}=ctrlCurrent();
+  if(!nome || !data){ ctrlToast('Selecione um GCM antes de registrar.',false); return; }
+  const inicio=document.getElementById('ctrlAtestadoDate')?.value;
+  const dias=+(document.getElementById('ctrlAtestadoDias')?.value||0);
+  const obs=(document.getElementById('ctrlAtestadoObs')?.value||'').trim();
+  if(!inicio || dias<1){ ctrlToast('Informe a data inicial e uma quantidade válida de dias.',false); return; }
+  const fim=ctrlAddDays(inicio,dias-1);
+  if(+inicio.slice(0,4)!==ano || +fim.slice(0,4)!==ano){ ctrlToast(`O atestado deve ficar dentro do ano de referência ${ano}.`,false); return; }
+  
+  for(let i=0;i<dias;i++){
+    const iso=ctrlAddDays(inicio,i);
+    if(data.atestados.some(x=>x.data===iso)){ ctrlToast(`O dia ${ctrlDateBR(iso)} já possui atestado registrado.`,false); return; }
+  }
+
+  // 1. Salva localmente os dias de atestado
+  for(let i=0;i<dias;i++){
+    data.atestados.push({data:ctrlAddDays(inicio,i), dias:1, obs});
+  }
+  data.atestados.sort((a,b)=>a.data.localeCompare(b.data));
+  salvarControleGcmLocal();
+
+  // 2. Salva no Supabase
+  if (typeof _supabase !== 'undefined') {
+    await _supabase.from('controle_gcm').insert([
+      { nome_gcm: nome, ano: ano, tipo: 'atestado', data_registro: inicio, dias: dias, observacao: obs }
+    ]);
+
+    // 3. Registra na Auditoria
+    await registrarRastroAuditoria("Lançamento de Atestado Médico", `Servidor: ${nome} | Início: ${inicio} | Dias: ${dias} | Obs: ${obs}`);
+  }
+
+  renderControleGcmView();
+  ctrlToast(`${dias} dia(s) de atestado médico registrado(s) com sucesso!`, true);
+}
+async function ctrlDelete(kind,idx){
+  const {data}=ctrlCurrent(); if(!data) return;
+  const arr=kind==='ab'?data.abonadas:data.atestados;
+  if(!arr[idx]) return;
+  const item=arr[idx];
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nExcluir ${kind==='ab'?'a Falta Abonada':'o dia de Atestado'} de ${ctrlDateBR(item.data)}?\n\nOK = confirmar | Cancelar = manter.`)) return;
+  arr.splice(idx,1); const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Lançamento excluído e sincronizado.':'Lançamento excluído localmente; sincronização pendente.',ok);
+}
+async function ctrlLimparAbonadas(){
+  const {nome,ano,data}=ctrlCurrent(); if(!data) return;
+  if(!data.abonadas.length){ ctrlToast('Não há registros de Faltas Abonadas para limpar.',false); return; }
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nVocê está prestes a LIMPAR TODAS as ${data.abonadas.length} Faltas Abonadas de ${nome}, ano ${ano}.\n\nEsta ação não pode ser desfeita.\n\nOK = confirmar | Cancelar = manter.`)) return;
+  data.abonadas=[]; const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Todos os registros de Faltas Abonadas foram limpos e sincronizados.':'Registros limpos localmente; sincronização pendente.',ok);
+}
+async function ctrlLimparAtestados(){
+  const {nome,ano,data}=ctrlCurrent(); if(!data) return;
+  if(!data.atestados.length){ ctrlToast('Não há registros de Atestados para limpar.',false); return; }
+  if(!confirm(`CONFIRMAR ALTERAÇÃO\n\nVocê está prestes a LIMPAR TODOS os ${data.atestados.length} dias de Atestado de ${nome}, ano ${ano}.\n\nEsta ação não pode ser desfeita.\n\nOK = confirmar | Cancelar = manter.`)) return;
+  data.atestados=[]; const ok=await ctrlSave(); renderControleGcmView(); ctrlToast(ok?'Todos os registros de Atestados foram limpos e sincronizados.':'Registros limpos localmente; sincronização pendente.',ok);
+}
+
+function renderAll(){
+  renderKpis();
+  renderModo2027();
+  renderAntesDepois();
+  renderNovosPorAno();
+  renderNovosGcmsTable();
+  renderRosterTable();
+  renderYearChecks();
+  renderYearChart();
+  renderPeriodComparisons();
+  renderModeloComparison();
+  renderLegend();
+  renderHorasExtras();
+  bindHorasExtras();
+  renderControleGcm(); // <--- ADICIONE ESTA LINHA AQUI PARA ATIVAR O MÓDULO
+  renderParameterSummary();
+  renderRankings();
+  renderPlantaoCards();
+  renderSidebarGcmList();
+  if(state.selected){ renderProfile(state.selected); renderProfileChart(state.selected); }
+  const eligible=document.getElementById("eligibleCount");
+  if(eligible) eligible.textContent = ROSTER.length + " GCMs elegíveis no cálculo";
+}
+
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));
+  document.querySelectorAll('.nav-btn[data-section]').forEach(b=>b.classList.toggle('active',b.dataset.section===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav-btn[data-section]').forEach(btn=>btn.addEventListener('click',()=>showSection(btn.dataset.section)));
+const sideSearch=document.getElementById('sideGcmSearch');
+if(sideSearch) sideSearch.addEventListener('input',renderSidebarGcmList);
+
+document.getElementById("refDateInput").value = todayISO();
+
+carregarControleGcmLocal();
+
+carregarDadosDaNuvem().then(() => {
+  carregarPlantoesOnline().then(() => renderAll());
+});
+
+setInterval(()=>{
+  carregarPlantoesOnline().then(()=>renderAll());
+}, 60000);
+
+function exportarTabelaCSV() {
+  const table = document.getElementById("rosterTable");
+  if (!table) return;
+  let csv = [];
+  const rows = table.querySelectorAll("tr");
+  for (let i = 0; i < rows.length; i++) {
+    let row = [], cols = rows[i].querySelectorAll("td, th");
+    for (let j = 0; j < cols.length; j++) {
+      let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
+      row.push('"' + data + '"');
+    }
+    csv.push(row.join(";")); 
+  }
+  const csvString = "\uFEFF" + csv.join("\n");
+  const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.setAttribute("href", URL.createObjectURL(blob));
+  link.setAttribute("download", "Impacto_Folha_GCM_Taubate.csv");
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+const exportBtn = document.getElementById("exportCsvBtn");
+if (exportBtn) exportBtn.addEventListener("click", exportarTabelaCSV);
+
+// --- SISTEMA DE LOGIN DIRETO ---
+function validarAcesso() {
+  const inputSenha = document.getElementById('senhaAcesso');
+  const overlay = document.getElementById('loginOverlay');
+  const erro = document.getElementById('erroSenha');
+  const welcome = document.getElementById('welcomeMsg');
+
+  if (!inputSenha || !overlay) return;
+
+  const senhaDigitada = inputSenha.value.trim();
+  if (!senhaDigitada) return;
+
+  let senhaCodificada = "";
+  try {
+    senhaCodificada = btoa(senhaDigitada);
+  } catch (e) {
+    return;
+  }
+
+  if (senhaCodificada === 'Um9ic29uMjMwNCM=') {
+    if (welcome) {
+      welcome.innerHTML = '👋 SEJA BEM VINDO ROBSON';
+      welcome.style.display = 'block';
+    }
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
+
+  } else if (senhaCodificada === 'U0VTT1BAMjAyNg==') {
+    document.body.classList.add('modo-leitura');
+    if (welcome) {
+      welcome.innerHTML = '👋 SEJA BEM VINDO COMANDANTE';
+      welcome.style.display = 'block';
+    }
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
+
+  } else {
+    if (erro) erro.style.display = 'block';
+  }
+}
+
+function toggleSenhaVisual() {
+  const input = document.getElementById('senhaAcesso');
+  const icone = document.getElementById('togglePassword');
+  if (!input || !icone) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    icone.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    icone.textContent = '👁️';
+  }
+}
+
+document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.shiftKey && e.key === 'J') || (e.ctrlKey && e.shiftKey && e.key === 'C') || (e.ctrlKey && e.key === 'u') || (e.ctrlKey && e.key === 'U')) {
+    e.preventDefault();
+  }
+});
+window.addEventListener('online', async()=>{ if(cloudSyncPending){ await salvarDadosNaNuvem(); } });
+
+</script>
+</body>
+</html>
